@@ -11,6 +11,7 @@ import (
 	"github.com/ssbc/util"
 	"path/filepath"
 	"strings"
+	"github.com/ssbc/common"
 )
 
 const (
@@ -84,7 +85,7 @@ func (s *ServerCmd) init() {
 			return err
 		}
 		log.Info("Mysql Connection Open Successfully")
-
+		common.Init()
 		err = s.getServer().Start()
 		if err != nil {
 			return err

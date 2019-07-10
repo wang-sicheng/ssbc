@@ -17,7 +17,7 @@ const (
 	USERNAME = "root"
 	PASSWORD = "passwd"
 	NETWORK  = "tcp"
-	SERVER   = "192.168.0.104"
+	SERVER   = "192.168.31.135"
 	PORT     = 3306
 	DATABASE = "SSBC"
 )

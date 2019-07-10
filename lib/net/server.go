@@ -214,6 +214,7 @@ func (s *Server) closeListener() error {
 func (s *Server) registerHandlers() {
 	s.mux = gmux.NewRouter()
 	s.registerHandler("testinfo", newTestInfoEndpoint(s))
+	s.registerHandler("block", newblockEndpoint(s))
 
 }
 func (s *Server) registerHandler(path string, se *serverEndpoint) {

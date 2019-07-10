@@ -3,7 +3,6 @@ package common
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 	"io"
 	"log"
@@ -53,7 +52,7 @@ func run() error {
 func makeMuxRouter() http.Handler {
 	muxRouter := mux.NewRouter()
 	muxRouter.HandleFunc("/", handleGetBlockchain).Methods("GET")
-	muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
+	//muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
 	return muxRouter
 }
 
@@ -68,30 +67,30 @@ func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
 }
 
 // takes JSON payload as an input for heart rate (BPM)
-func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var msg Message
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&msg); err != nil {
-		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
-		return
-	}
-	defer r.Body.Close()
-
-	mutex.Lock()
-	prevBlock := Blockchain[len(Blockchain)-1]
-	newBlock := generateBlock(prevBlock, msg.BPM)
-
-	if isBlockValid(newBlock, prevBlock) {
-		Blockchain = append(Blockchain, newBlock)
-		spew.Dump(Blockchain)
-	}
-	mutex.Unlock()
-
-	respondWithJSON(w, r, http.StatusCreated, newBlock)
-
-}
+//func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
+//	w.Header().Set("Content-Type", "application/json")
+//	var msg Message
+//
+//	decoder := json.NewDecoder(r.Body)
+//	if err := decoder.Decode(&msg); err != nil {
+//		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+//		return
+//	}
+//	defer r.Body.Close()
+//
+//	mutex.Lock()
+//	prevBlock := Blockchain[len(Blockchain)-1]
+//	//newBlock := GenerateBlock(prevBlock, msg.BPM)
+//
+//	if isBlockValid(newBlock, prevBlock) {
+//		Blockchain = append(Blockchain, newBlock)
+//		spew.Dump(Blockchain)
+//	}
+//	mutex.Unlock()
+//
+//	respondWithJSON(w, r, http.StatusCreated, newBlock)
+//
+//}
 
 func respondWithJSON(w http.ResponseWriter, r *http.Request, code int, payload interface{}) {
 	response, err := json.MarshalIndent(payload, "", "  ")
@@ -131,17 +130,21 @@ func calculateHash(block Block) string {
 }
 
 // create a new block using previous block's hash
-func generateBlock(oldBlock Block, BPM int) Block {
+func GenerateBlock(oldBlock Block, newBlock Block) Block {
 
-	var newBlock Block
+
 
 	t := time.Now()
 
 	newBlock.Index = oldBlock.Index + 1
 	newBlock.Timestamp = t.String()
-	newBlock.BPM = BPM
+
 	newBlock.PrevHash = oldBlock.Hash
 	newBlock.Hash = calculateHash(newBlock)
 
 	return newBlock
+}
+func Init(){
+	b := Block{0,"0",0,"0","0"}
+	Blockchain = append(Blockchain, b)
 }
