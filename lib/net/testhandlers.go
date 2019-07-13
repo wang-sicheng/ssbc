@@ -1,9 +1,6 @@
 package net
 
-import (
-	"github.com/ssbc/common"
-	"github.com/ssbc/lib/mysql"
-)
+import "fmt"
 
 type TestInfo struct {
 
@@ -26,10 +23,11 @@ type TestInfoResponseNet struct {
 	Version string
 }
 func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-	b := common.Block{5,"555",5,"h","pre"}
-	mysql.InsertBlock(b)
-	resp := &TestInfoResponseNet{}
-	resp.TName = "hello world"
-	resp.Version = "SSBC v0.1"
+	b,err := ctx.ReadBodyBytes()
+	fmt.Println(string(b),err)
+	resp := TestInfoResponseNet{
+		TName: "hello",
+		Version: "world",
+	}
 	return resp, nil
 }

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"os"
@@ -76,5 +77,19 @@ func FileExists(name string) bool {
 	return true
 }
 
+func Marshal(from interface{}, what string) ([]byte, error) {
+	buf, err := json.Marshal(from)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to marshal %s", what)
+	}
+	return buf, nil
+}
 
+func Unmarshal(from []byte, to interface{}, what string) error {
+	err := json.Unmarshal(from, to)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to unmarshal %s", what)
+	}
+	return nil
+}
 

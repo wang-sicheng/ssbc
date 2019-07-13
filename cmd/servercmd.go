@@ -6,12 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ssbc/lib/mysql"
+	"github.com/ssbc/common"
 	"github.com/ssbc/lib/net"
 	"github.com/ssbc/util"
 	"path/filepath"
 	"strings"
-	"github.com/ssbc/common"
 )
 
 const (
@@ -80,13 +79,13 @@ func (s *ServerCmd) init() {
 		if len(args) > 0 {
 			return errors.Errorf(extraArgsError, args, startCmd.UsageString())
 		}
-		err := mysql.DB.Ping()
-		if err != nil {
-			return err
-		}
+		//err := mysql.DB.Ping()
+		//if err != nil {
+		//	return err
+		//}
 		log.Info("Mysql Connection Open Successfully")
 		common.Init()
-		err = s.getServer().Start()
+		err := s.getServer().Start()
 		if err != nil {
 			return err
 		}

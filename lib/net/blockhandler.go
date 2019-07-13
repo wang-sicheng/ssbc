@@ -41,3 +41,17 @@ type blockResponseNet struct {
 
 	Hash string
 }
+
+func newRecBlockRound2(s *Server)*serverEndpoint{
+	return &serverEndpoint{
+		Methods: []string{ "POST"},
+		Handler: recBlockRound2Handler,
+		Server:  s,
+	}
+}
+
+func recBlockRound2Handler(ctx *serverRequestContextImpl) (interface{}, error) {
+
+	return nil, nil
+}
+
