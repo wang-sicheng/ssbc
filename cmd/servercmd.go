@@ -79,6 +79,7 @@ func (s *ServerCmd) init() {
 		if len(args) > 0 {
 			return errors.Errorf(extraArgsError, args, startCmd.UsageString())
 		}
+		// Test 暂不启动DB
 		//err := mysql.DB.Ping()
 		//if err != nil {
 		//	return err

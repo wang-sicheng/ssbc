@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	"crypto/sha256"
 )
 
 type Block struct {
@@ -24,7 +24,7 @@ type Block struct {
 var Blockchain []Block
 
 type Message struct {
-	BPM int
+	BPM int `BPM`
 }
 
 var mutex = &sync.Mutex{}
@@ -148,3 +148,5 @@ func Init(){
 	b := Block{0,"0",0,"0","0"}
 	Blockchain = append(Blockchain, b)
 }
+
+

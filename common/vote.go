@@ -5,7 +5,13 @@ package common
 func vote(){}
 
 
-func sendTransList(){}
+func sendTransList(){
+
+
+
+
+
+}
 
 
 

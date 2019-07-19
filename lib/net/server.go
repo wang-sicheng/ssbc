@@ -215,6 +215,10 @@ func (s *Server) registerHandlers() {
 	s.mux = gmux.NewRouter()
 	s.registerHandler("testinfo", newTestInfoEndpoint(s))
 	s.registerHandler("block", newblockEndpoint(s))
+	s.registerHandler("recTransHash", receive_trans_bitarry(s))
+	s.registerHandler("recBlock", receiveBlock(s))
+	s.registerHandler("recVote1", vote(s))
+	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s))
 
 }
 func (s *Server) registerHandler(path string, se *serverEndpoint) {
