@@ -6,6 +6,14 @@ import (
 	"github.com/ssbc/common"
 )
 
+var (
+	voteCount int = 0
+	revoCount int = 0
+	commonTrans int =0
+)
+
+
+
 func receive_trans_bitarry(s *Server)*serverEndpoint{
 	return &serverEndpoint{
 		Methods: []string{ "POST"},
@@ -22,7 +30,7 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		log.Info(err)
 	}
 	log.Info("rtbitarryHandler: ", string(b))
-	findCommonTrans(message.BPM)
+	go findCommonTrans(message.BPM)
 	return nil, nil
 }
 
@@ -35,6 +43,22 @@ func recBlockVoteRound1(s *Server)*serverEndpoint{
 }
 
 func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, error) {
+	b,err := ctx.ReadBodyBytes()
+	if err !=nil{
+		log.Info("ERR recBlockVoteRound1Handler: ", err)
+	}
+	log.Info("recBlockVoteRound1Handler: ",string(b))
+	v := &Vote{}
+	err = json.Unmarshal(b, v)
+	if err !=nil{
+		log.Info("ERR recBlockVoteRound1Handler: ", err)
+	}
+
+	voteCount++
+	log.Info("recBlockVoteRound1Handler voteCount : ",voteCount)
+	if voteCount == 2{
+		go voteForRound(v)
+	}
 
 	return nil, nil
 }
@@ -58,7 +82,11 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err !=nil{
 		log.Info("ERR recBlockVoteRound2Handler: ", err)
 	}
-	log.Info("recBlockVoteRound2Handler: ",v)
+	revoCount++
+	log.Info("recBlockVoteRound2Handler revoCount: ",revoCount)
+	if revoCount == 2 {
+		statistic()
+	}
 
 	return nil, nil
 }
@@ -77,18 +105,7 @@ type ReVote struct{
 }
 
 func voteHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-	b,err := ctx.ReadBodyBytes()
-	if err !=nil{
-		log.Info("ERR voteHandler: ", err)
-	}
-	log.Info("voteHandler: ",string(b))
-	v := &Vote{}
-	err = json.Unmarshal(b, v)
-	if err !=nil{
-		log.Info("ERR voteHandler: ", err)
-	}
-	log.Info("voteHandler: ",v)
-	go voteForRound(v)
+
 	return nil, nil
 }
 
@@ -101,10 +118,11 @@ func voteForRound(v *Vote){
 	rv := &ReVote{Sender:"zhuanfa", Vote: v}
 	b, err := json.Marshal(rv)
 	if err != nil{
-		log.Info("recBlockVoteRound: ",err)
+		log.Info("voteForRound: ",err)
 		return
 	}
-	Broadcast("recBlockVoteRound",b)
+
+	Broadcast("recBlockVoteRound2",b)
 
 
 
@@ -146,7 +164,11 @@ func findCommonTrans(bpm int){
 		log.Info("ERR findCommonTrans: ", err)
 		return
 	}
-	Broadcast("recBlock",bb)
+	commonTrans++
+	if commonTrans == 1 {
+		Broadcast("recBlock",bb)
+	}
+
 
 }
 type Vote struct{
@@ -163,10 +185,30 @@ func verify(block *common.Block){
 		if err != nil{
 			log.Info("verify_block: ", err)
 		}
-		Broadcast("recVote1", b)
+		Broadcast("recBlockVoteRound1", b)
 	}
 
 }
 func verify_block(block *common.Block)bool{
 	return true
+}
+
+func statistic(){
+	//statistic 2 round vote
+	// then decide whether store the block or not
+	store_block()
+
+	log.Info("store the block")
+
+
+
+
+
+}
+
+
+func store_block(){
+
+
+
 }

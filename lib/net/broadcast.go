@@ -23,7 +23,7 @@ type Req struct {
 
 }
 
-var Urls []string = []string{"http://127.0.0.1:8000"}
+var Urls []string = []string{"http://127.0.0.1:8000", "http://127.0.0.1:8001"}
 
 func Broadcast(s string,reqBody []byte)error{
 

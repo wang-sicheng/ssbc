@@ -217,7 +217,7 @@ func (s *Server) registerHandlers() {
 	s.registerHandler("block", newblockEndpoint(s))
 	s.registerHandler("recTransHash", receive_trans_bitarry(s))
 	s.registerHandler("recBlock", receiveBlock(s))
-	s.registerHandler("recVote1", vote(s))
+	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s))
 	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s))
 
 }
