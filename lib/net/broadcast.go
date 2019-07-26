@@ -23,7 +23,7 @@ type Req struct {
 
 }
 
-var Urls []string = []string{"http://127.0.0.1:8000", "http://127.0.0.1:8001"}
+var Urls []string = []string{"http://127.0.0.1:8000", "http://127.0.0.1:8001", "http://127.0.0.1:8002", "http://127.0.0.1:8003"}
 
 func Broadcast(s string,reqBody []byte)error{
 
@@ -64,7 +64,7 @@ func NewPost(endPoint string, reqBody []byte)(*http.Request, error){
 func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 	reqStr := "test"
 
-	log.Info("Sending request\n")
+//	log.Info("Sending request\n")
 
 
 	resp, err := c.httpClient.Do(req)
@@ -83,9 +83,9 @@ func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 		if err != nil {
 			return errors.Wrapf(err, "Failed to read response of request: %s", reqStr)
 		}
-		log.Info("Received response\n")
+	//	log.Info("Received response\n")
 	}
-	log.Info(string(respBody))
+
 	var body *cfsslapi.Response
 	if respBody != nil && len(respBody) > 0 {
 		body = new(cfsslapi.Response)
@@ -123,12 +123,12 @@ func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 	return nil
 }
 
-func (c *Client) getURL(endpoint string) (string, error) {
-	nurl := "127.0.0.1:8000"
-
-	rtn := fmt.Sprintf("%s/%s", nurl, endpoint)
-	return rtn, nil
-}
+//func (c *Client) getURL(endpoint string) (string, error) {
+//	nurl := "127.0.0.1:8000"
+//
+//	rtn := fmt.Sprintf("%s/%s", nurl, endpoint)
+//	return rtn, nil
+//}
 
 func (c *Client) initHTTPClient() error {
 	tr := new(http.Transport)

@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
+	"sync"
 )
 
 var (
+	vm sync.Mutex
 	voteCount int = 0
 	revoCount int = 0
-	commonTrans int =0
+	commonTrans int = 1
 )
 
 
@@ -53,13 +55,13 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err !=nil{
 		log.Info("ERR recBlockVoteRound1Handler: ", err)
 	}
-
+	vm.Lock()
 	voteCount++
 	log.Info("recBlockVoteRound1Handler voteCount : ",voteCount)
-	if voteCount == 2{
+	if voteCount % 4 == 0{
 		go voteForRound(v)
 	}
-
+	vm.Unlock()
 	return nil, nil
 }
 
@@ -84,7 +86,7 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	}
 	revoCount++
 	log.Info("recBlockVoteRound2Handler revoCount: ",revoCount)
-	if revoCount == 2 {
+	if revoCount % 4 == 0 {
 		statistic()
 	}
 
@@ -164,7 +166,7 @@ func findCommonTrans(bpm int){
 		log.Info("ERR findCommonTrans: ", err)
 		return
 	}
-	commonTrans++
+
 	if commonTrans == 1 {
 		Broadcast("recBlock",bb)
 	}
@@ -209,6 +211,7 @@ func statistic(){
 
 func store_block(){
 
-
+	log.Info("store the block into Mysql")
+	//lib.Db.insert(block)
 
 }
