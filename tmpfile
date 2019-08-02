@@ -15,47 +15,74 @@ import (
 
 var (
 	regHref       = `((ht|f)tps?)://[w]{0,3}.baidu.com/link\?[a-zA-z=0-9-\s]*`
+)package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"time"
+	"strings"
+)
+
+
+var (
+	urls = []string{}
+	sourceCode =[]string{}
 )
 
 func main() {
-
-		fistStart()
+	fistStart()
+	for _,u := range urls{
+		getSource("http://etherscan.io"+u)
+	}
+	for _,k := range sourceCode{
+		fmt.Println("ETH sourceCode:")
+		fmt.Println(k)
+	}
 
 
 }
+func getSource(url string){
+	fmt.Println("Geting ",url,"SourceCode")
+	resp, err := http.Get(url)
+	if err != nil{
+		fmt.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
 
+	reg := regexp.MustCompile(`top: 5px;'>(?s:(.*?))</pre><br><script>`)
+	result := reg.FindAllString(string(body),-1)
+	for i:=0;i<len(result);i++{
+		result[i] = strings.TrimLeft(result[i],"top: 5px;'>")
+		result[i] = strings.TrimRight(result[i],"</pre><br><script>")
+	}
+	sourceCode = append(sourceCode, result...)
+}
 func fistStart() {
-	var num int
+
 	url := "http://etherscan.io/contractsVerified"
 	resp, _ := http.Get(url)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 	reg := regexp.MustCompile(`/address/[a-zA-z=0-9-\s]*`)
-	f, _ := os.OpenFile("./data/url.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	defer f.Close()
+
 	for _, d := range reg.FindAllString(string(body), -1) {
-		ff, _ := os.OpenFile("./data/url.txt", os.O_RDWR, 0666)
-		file, _ := ioutil.ReadAll(ff)
-		dd := strings.Split(d, "")
-		dddd := ""
-		for _, ddd := range dd {
-			if ddd == "?" {
-				ddd = `\?`
-			}
-			dddd += ddd
-		}
-		if checkRegexp(string(file), dddd, 0).(string) == "" {
-			io.WriteString(f, d+"\n")
-			fmt.Print("\n收集地址：" + d + "\n")
-			num++
-		}
+
+		fmt.Println("地址收集： ", d)
+		urls = append(urls, d)
+
+
 		// fmt.Print(string(file))
-		ff.Close()
+
 	}
-	fmt.Print("\n首次收集网络地址：" + strconv.Itoa(len(reg.FindAllString(string(body), -1))) + "\n")
-	fmt.Print("\n去重后网络地址数：" + strconv.Itoa(num))
-	fmt.Print("\n\n首次储存成功！\n")
+	fmt.Println("\n首次收集网络地址：" ,len(urls))
+
 }
 func checkRegexp(cont string, reg string, style int) (result interface{}) {
 	check := regexp.MustCompile(reg)
