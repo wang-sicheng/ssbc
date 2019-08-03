@@ -13,6 +13,7 @@ var (
 	revoCount int = 0
 	commonTrans int = 1
 	votes = make(map[string]chan *Vote)
+	revotes = make(map[string]chan *ReVote)
 	tmpBlock *common.Block
 )
 
@@ -118,14 +119,19 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err !=nil{
 		log.Info("ERR recBlockVoteRound2Handler: ", err)
 	}
-
-	vm.Lock()
-	revoCount++
-	log.Info("recBlockVoteRound2Handler revoCount: ",revoCount)
-	if revoCount % 4 == 0 {
-		statistic(v)
+	revotes[v.Hash] <- v
+	vc := len(revotes[v.Hash])
+	log.Info("recBlockVoteRound2Handler revoCount : ",vc)
+	if vc == 4{
+		go statistic(v)
 	}
-	vm.Unlock()
+	//vm.Lock()
+	//revoCount++
+	//log.Info("recBlockVoteRound2Handler revoCount: ",revoCount)
+	//if revoCount % 4 == 0 {
+	//	statistic(v)
+	//}
+	//vm.Unlock()
 	return nil, nil
 }
 
@@ -172,13 +178,15 @@ func voteForRoundNew(hash string){
 	for i:=0;i<4;i++{
 		vs = append(vs,<-votes[hash])
 	}
+	close(votes[hash])
+	delete(votes, hash)
 	rv := &ReVote{Sender:"zhuanfa", Vote: vs, Hash:hash}
 	b, err := json.Marshal(rv)
 	if err != nil{
 		log.Info("voteForRound: ",err)
 		return
 	}
-
+	revotes[rv.Hash] = make(chan *ReVote, 10)
 	Broadcast("recBlockVoteRound2",b)
 
 }
@@ -234,6 +242,8 @@ func statistic(rv *ReVote){
 	if tmpBlock.Hash == rv.Hash{
 		log.Info("Pulling out tmpBlock")
 	}
+	close(revotes[rv.Hash])
+	delete(revotes, rv.Hash)
 	log.Info("store the block")
 	store_block()
 	log.Info("Successfully stored the block")
