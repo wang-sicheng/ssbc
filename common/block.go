@@ -20,9 +20,13 @@ type Block struct {
 	BPM       int `db:BPM`
 	Hash      string `db:Hash`
 	PrevHash  string `db:Prevhash`
+	// 每条交易要签名 是client的签名 tbd
+	// merkel tree
+	//  hash 块头hash
+	//  块体 交易
 }
 var Blockchain []Block
-
+var Blockchains = make(chan Block , 100000)
 type Message struct {
 	BPM int `BPM`
 }
@@ -147,6 +151,7 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 func Init(){
 	b := Block{0,"0",0,"0","0"}
 	Blockchain = append(Blockchain, b)
+	Blockchains <- b
 }
 
 

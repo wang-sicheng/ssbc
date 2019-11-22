@@ -22,22 +22,38 @@ type Client struct {
 type Req struct {
 
 }
+var clients []*Client
 
-var Urls []string = []string{"http://127.0.0.1:8000", "http://127.0.0.1:8001", "http://127.0.0.1:8002", "http://127.0.0.1:8003"}
+var Urls []string = []string{"http://127.0.0.1:8000"}
 
-func Broadcast(s string,reqBody []byte)error{
-
-	for _,k := range Urls{
+func init(){
+	for _,k := range Urls {
 		client := &Client{
 			Url: k,
 		}
+		client.httpClient = &http.Client{
 
-		err :=client.initHTTPClient()
-		if err != nil{
-			log.Infof("broadcast fail:%s",k)
-			return err
+			Transport: &http.Transport{
+
+				MaxIdleConns:        10,
+				MaxIdleConnsPerHost: 10,
+				DisableKeepAlives:   false,
+			},
 		}
-		endPoint := k + "/" + s
+
+
+		clients = append(clients, client)
+	}
+}
+
+func Broadcast(s string,reqBody []byte)error{
+
+	for _,client := range clients{
+
+
+
+
+		endPoint := client.Url + "/" + s
 
 		req,err := NewPost(endPoint, reqBody)
 		if err != nil{
@@ -123,12 +139,7 @@ func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 	return nil
 }
 
-//func (c *Client) getURL(endpoint string) (string, error) {
-//	nurl := "127.0.0.1:8000"
-//
-//	rtn := fmt.Sprintf("%s/%s", nurl, endpoint)
-//	return rtn, nil
-//}
+
 
 func (c *Client) initHTTPClient() error {
 	tr := new(http.Transport)

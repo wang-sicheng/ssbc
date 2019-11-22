@@ -5,6 +5,7 @@ import (
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
 	"sync"
+	"time"
 )
 
 var (
@@ -12,9 +13,12 @@ var (
 	voteCount int = 0
 	revoCount int = 0
 	commonTrans int = 1
-	votes = make(map[string]chan *Vote)
-	revotes = make(map[string]chan *ReVote)
+	votes = sync.Map{}
+	//votes = make(map[string]chan *Vote)
+	revotes = sync.Map{}
+	//revotes = make(map[string]chan *ReVote)
 	tmpBlock *common.Block
+	voteCounts int = 1
 )
 
 
@@ -82,12 +86,18 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 		log.Info("ERR recBlockVoteRound1Handler: ", err)
 	}
 	//if _,ok := votes[v.Hash];ok{
-		votes[v.Hash] <- v
-		vc := len(votes[v.Hash])
-		log.Info("recBlockVoteRound1Handler voteCount : ",vc)
-		if vc == 4{
-			go voteForRoundNew(v.Hash)
-		}
+	var voteChan chan *Vote
+	if vs,ok:=votes.Load(v.Hash);ok{
+		voteChan,_ =vs.(chan *Vote)
+		voteChan <- v
+	}
+	vc := len(voteChan)
+		//votes[v.Hash] <- v
+		// vc := len(votes[v.Hash])
+	log.Info("recBlockVoteRound1Handler voteCount : ",vc)
+	if vc == voteCounts{
+		go voteForRoundNew(v.Hash)
+	}
 	//}
 
 	//vm.Lock()
@@ -119,10 +129,15 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err !=nil{
 		log.Info("ERR recBlockVoteRound2Handler: ", err)
 	}
-	revotes[v.Hash] <- v
-	vc := len(revotes[v.Hash])
+	//revotes[v.Hash] <- v
+	var revoteChan chan *ReVote
+	if vs,ok:=revotes.Load(v.Hash);ok{
+		revoteChan,_ =vs.(chan *ReVote)
+		revoteChan <- v
+	}
+	vc := len(revoteChan)
 	log.Info("recBlockVoteRound2Handler revoCount : ",vc)
-	if vc == 4{
+	if vc == voteCounts{
 		go statistic(v)
 	}
 	//vm.Lock()
@@ -175,18 +190,26 @@ func voteForRoundNew(hash string){
 	//then statistics
 
 	vs:=[]*Vote{}
-	for i:=0;i<4;i++{
-		vs = append(vs,<-votes[hash])
+	var voteChan chan *Vote
+	if vs,ok:=votes.Load(hash);ok{
+		voteChan,_ =vs.(chan *Vote)
+
 	}
-	close(votes[hash])
-	delete(votes, hash)
+	for i:=0;i<voteCounts;i++{
+		vs = append(vs,<- voteChan)
+	}
+	//close(votes[hash])
+	//delete(votes, hash)
+	close(voteChan)
+	votes.Delete(hash)
 	rv := &ReVote{Sender:"zhuanfa", Vote: vs, Hash:hash}
 	b, err := json.Marshal(rv)
 	if err != nil{
 		log.Info("voteForRound: ",err)
 		return
 	}
-	revotes[rv.Hash] = make(chan *ReVote, 10)
+	revotes.Store(rv.Hash,make(chan *ReVote, 10))
+	//revotes[rv.Hash] = make(chan *ReVote, 10)
 	Broadcast("recBlockVoteRound2",b)
 
 }
@@ -221,7 +244,8 @@ func verify(block *common.Block){
 	// do something like verify block
 	// now we consider verify
 	if verify_block(block){
-		votes[block.Hash] = make(chan *Vote,10)
+		votes.Store(block.Hash,make(chan *Vote,10))
+		//votes[block.Hash] = make(chan *Vote,10)
 		tmpBlock = block
 		v := &Vote{Sender : "hihihi",Hash : block.Hash, Vote : 1 }
 		b, err := json.Marshal(v)
@@ -242,18 +266,27 @@ func statistic(rv *ReVote){
 	if tmpBlock.Hash == rv.Hash{
 		log.Info("Pulling out tmpBlock")
 	}
-	close(revotes[rv.Hash])
-	delete(revotes, rv.Hash)
+	var revoteChan chan *ReVote
+	if vs,ok:=revotes.Load(rv.Hash);ok{
+		revoteChan,_ =vs.(chan *ReVote)
+
+	}
+	//close(revotes[rv.Hash])
+	//delete(revotes, rv.Hash)
+	close(revoteChan)
+	revotes.Delete(rv.Hash)
 	log.Info("store the block")
 	store_block()
 	log.Info("Successfully stored the block")
 	common.Blockchain = append(common.Blockchain, *tmpBlock)
+	common.Blockchains <- *tmpBlock
 	log.Info("Now the newest 10 blocks is:")
 	l :=len(common.Blockchain)
-	for i:=0 ;l-1-i>=0&&i<10;i++{
+	log.Info("len of blockchain: " ,len(common.Blockchain))
+	for i := l-1 ; i >= 0 && l-1-i<10 ; i--{
 		log.Info(common.Blockchain[i])
 	}
-
+	t2 =time.Now()
 
 
 

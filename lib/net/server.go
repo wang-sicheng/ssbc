@@ -177,8 +177,7 @@ func (s *Server) serve() error {
 		//    and returns to the caller
 		// 2) the caller immediately calls s.Stop, which sets s.listener to nil
 		// 3) the go routine runs and calls this function
-		// So this prevents the panic which was reported in
-		// in https://jira.hyperledger.org/browse/FAB-3100.
+
 		return nil
 	}
 	s.serveError = http.Serve(listener, s.mux)
