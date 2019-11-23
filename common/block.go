@@ -20,13 +20,28 @@ type Block struct {
 	BPM       int `db:BPM`
 	Hash      string `db:Hash`
 	PrevHash  string `db:Prevhash`
+	Merkle	  string
+	TX 		  []Transaction
+	Signature string
 	// 每条交易要签名 是client的签名 tbd
 	// merkel tree
 	//  hash 块头hash
 	//  块体 交易
 }
+
+type Transaction struct{
+	From string
+	To string
+	Timestamp string
+	Signature string
+	Message string
+}
+
 var Blockchain []Block
 var Blockchains = make(chan Block , 100000)
+
+var Tx100 []Transaction
+
 type Message struct {
 	BPM int `BPM`
 }
@@ -145,13 +160,31 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 
 	newBlock.PrevHash = oldBlock.Hash
 	newBlock.Hash = calculateHash(newBlock)
-
+	newBlock.Merkle = "Merkle"
+	newBlock.Signature = "Signature"
+	newBlock.TX = Tx100
 	return newBlock
 }
+
 func Init(){
-	b := Block{0,"0",0,"0","0"}
+	Tx100 = generateTx()
+	b := Block{0,"0",0,"0","0","0",nil,"0"}
 	Blockchain = append(Blockchain, b)
 	Blockchains <- b
+
 }
 
-
+func generateTx()[]Transaction{
+	res := []Transaction{}
+	for i := 0; i < 10; i++{
+		tmp := Transaction{
+			From:"From",
+			To:"To",
+			Timestamp:"Timestamp",
+			Signature:"Signature",
+			Message:"Message",
+		}
+		res = append(res, tmp)
+	}
+	return res
+}

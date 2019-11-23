@@ -24,7 +24,7 @@ type Req struct {
 }
 var clients []*Client
 
-var Urls []string = []string{"http://127.0.0.1:8000"}
+var Urls []string = []string{"http://127.0.0.1:8000","http://127.0.0.1:8001","http://127.0.0.1:8002","http://127.0.0.1:8003"}
 
 func init(){
 	for _,k := range Urls {

@@ -18,7 +18,7 @@ var (
 	revotes = sync.Map{}
 	//revotes = make(map[string]chan *ReVote)
 	tmpBlock *common.Block
-	voteCounts int = 1
+	voteCounts int = 4
 )
 
 
