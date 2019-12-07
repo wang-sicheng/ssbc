@@ -1,10 +1,9 @@
-package main
+package redis
 
 import (
-	"log"
-	"fmt"
-	"reflect"
 	"github.com/gomodule/redigo/redis"
+	"github.com/cloudflare/cfssl/log"
+	"time"
 )
 
 //List 用于交易接收存储 LPUSH LPULL LRANGE
@@ -23,7 +22,7 @@ type RedisConn struct {
 func redisConn(netWork, address string) (redis.Conn, error) {
 	conn, err := redis.Dial(netWork, address)
 	if err != nil {
-		log.Println(err.Error())
+		log.Info(err.Error())
 		return nil, err
 	}
 	return conn, nil
@@ -33,7 +32,7 @@ func redisConn(netWork, address string) (redis.Conn, error) {
 func (conn *RedisConn) SetString(key, value string) error {
 	_, err := conn.conn.Do("SET", key, value)
 	if err != nil {
-		log.Println(err.Error())
+		log.Info(err.Error())
 		return err
 	}
 	return nil
@@ -43,7 +42,7 @@ func (conn *RedisConn) SetString(key, value string) error {
 func (conn *RedisConn) GetString(key string) (string, error) {
 	value, err := redis.String(conn.conn.Do("GET", key))
 	if err != nil {
-		log.Println(err.Error())
+		log.Info(err.Error())
 		return "", err
 	}
 	return value, nil
@@ -53,94 +52,95 @@ func (conn *RedisConn) GetString(key string) (string, error) {
 func (conn *RedisConn) SetExpire(key string, time int) error {
 	_, err := conn.conn.Do("expire", key, time)
 	if err != nil {
-		log.Println(err.Error())
+		log.Info(err.Error())
 		return err
 	}
 	return nil
 }
 
-//批量获取mget、批量设置mset
-func (conn *RedisConn) mSet(keyValue ...string) error {
-	_, err := conn.conn.Do("MSET", keyValue[0], keyValue[1], keyValue[2], keyValue[3])
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-	return nil
-}
-
-func (conn *RedisConn) mGet(key ...string) {
-	res, err := conn.conn.Do("MGET", key[0], key[1])
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	fmt.Printf("type: %s\n", reflect.TypeOf(res))
-	fmt.Printf("value: %s\n", res)
-}
-
-//列表
-func (conn *RedisConn) lPush() {
-	_, err := conn.conn.Do("LPUSH", "list1", "Java", "Python", "Golang")
-	if err != nil {
-		log.Println(err.Error())
-	}
-}
-
-func (conn *RedisConn) lPop() {
-	res, err := conn.conn.Do("LPOP", "list1")
-	if err != nil {
-		log.Println(err.Error())
-	}
-	fmt.Printf("%s\n", res)
-}
-
-
-//hash
-func (conn *RedisConn) hashSet() {
-	_, err := conn.conn.Do("HSET", "student", "name", "小雪")
-	if err != nil {
-		fmt.Println("haha")
-		log.Println(err.Error())
-	}
-}
-
-func (conn *RedisConn) hashGet() {
-	res, err := conn.conn.Do("HGET", "student", "name")
-	if err != nil {
-		log.Println(err.Error())
-	}
-	fmt.Printf("%s\n", res)
-}
-
-//hash more option
-func (conn *RedisConn) hashMSet() {
-	_, err := conn.conn.Do("HMSET", "students", "name", "小雪", "age", 6, "sex", "女")
-	if err != nil {
-		log.Println(err.Error())
-	}
-}
-
-func (conn *RedisConn) hashMGet() {
-	//int64s 转换返回的数组值
-	res, err := redis.Strings(conn.conn.Do("HMGET", "students", "sex"))
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	for k, v := range res {
-		fmt.Println(k, v)
-	}
-
-	fmt.Println(res)
-}
-
-func (conn *RedisConn) poolGetConn() {
-
-}
+////批量获取mget、批量设置mset
+//func (conn *RedisConn) mSet(keyValue ...string) error {
+//	_, err := conn.conn.Do("MSET", keyValue[0], keyValue[1], keyValue[2], keyValue[3])
+//	if err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//	return nil
+//}
+//
+//func (conn *RedisConn) mGet(key ...string) {
+//	res, err := conn.conn.Do("MGET", key[0], key[1])
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//
+//	fmt.Printf("type: %s\n", reflect.TypeOf(res))
+//	fmt.Printf("value: %s\n", res)
+//}
+//
+////列表
+//func (conn *RedisConn) lPush() {
+//	_, err := conn.conn.Do("LPUSH", "list1", "Java", "Python", "Golang")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//}
+//
+//func (conn *RedisConn) lPop() {
+//	res, err := conn.conn.Do("LPOP", "list1")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	fmt.Printf("%s\n", res)
+//}
+//
+//
+////hash
+//func (conn *RedisConn) hashSet() {
+//	_, err := conn.conn.Do("HSET", "student", "name", "小雪")
+//	if err != nil {
+//		fmt.Println("haha")
+//		log.Println(err.Error())
+//	}
+//}
+//
+//func (conn *RedisConn) hashGet() {
+//	res, err := conn.conn.Do("HGET", "student", "name")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	fmt.Printf("%s\n", res)
+//}
+//
+////hash more option
+//func (conn *RedisConn) hashMSet() {
+//	_, err := conn.conn.Do("HMSET", "students", "name", "小雪", "age", 6, "sex", "女")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//}
+//
+//func (conn *RedisConn) hashMGet() {
+//	//int64s 转换返回的数组值
+//	res, err := redis.Strings(conn.conn.Do("HMGET", "students", "sex"))
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//
+//	for k, v := range res {
+//		fmt.Println(k, v)
+//	}
+//
+//	fmt.Println(res)
+//}
+//
+//func (conn *RedisConn) poolGetConn() {
+//
+//}
 
 
 var Pool redis.Pool
+var Redisconn redis.Conn
 
 //MaxActive 最大连接数，即最多的tcp连接数，一般建议往大的配置，但不要超过操作系统文件句柄个数（centos下可以ulimit -n查看）。
 //MaxIdle 最大空闲连接数，即会有这么多个连接提前等待着，但过了超时时间也会关闭。
@@ -150,11 +150,11 @@ var Pool redis.Pool
 func init() {
 	Pool = redis.Pool{
 		//最大的激活连接数，同时最多有N个连接
-		MaxActive: 20,
+		MaxActive: 0,
 		//最大的空闲连接数，即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
 		MaxIdle: 10,
 		//空闲连接等待时间，超过此时间后，空闲连接将被关闭
-		IdleTimeout: 120,
+		IdleTimeout: 300 * time.Second,
 		//
 		Wait: true,
 		//连接方法
@@ -162,61 +162,96 @@ func init() {
 			return redisConn("tcp", "127.0.0.1:6379")
 		},
 	}
-}
-func main() {
 	conn, err := redisConn("tcp", "127.0.0.1:6379")
 	if err != nil {
-		log.Println(err.Error())
+		log.Info("redis fail init fail:",err.Error())
+
 	}
-
-	defer conn.Close()
-
-	redisConn := &RedisConn{conn: conn}
-	err = redisConn.SetString("name", "JayeWu")
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	err = redisConn.SetExpire("name", 10)
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	name, err := redisConn.GetString("name")
-	if err != nil {
-		log.Println(err.Error())
-	}
-	fmt.Println(name)
-
-	redisConn.mSet("name", "Jaye", "sex", "男")
-	redisConn.mGet("name", "sex")
-
-	fmt.Println("########list########")
-	redisConn.lPush()
-	res, err := redisConn.conn.Do("LRANGE", "list1", 1, 2)
-	if err != nil {
-		log.Println(err.Error())
-	}
-	fmt.Printf("%s\n", res)
-	redisConn.lPop()
-
-	fmt.Println("$$$$$$$$$$hash$$$$$$$$$$")
-	redisConn.hashSet()
-	redisConn.hashGet()
-
-	fmt.Println("$$$$$$$$$$hash-M$$$$$$$$$$")
-	redisConn.hashMSet()
-	redisConn.hashMGet()
-
-	fmt.Println("###########Pool############")
-	pconn := Pool.Get()
-	_, err = pconn.Do("SET", "home", "102004")
-	if err != nil {
-		log.Println(err.Error())
-	}
-	res, err = redis.String(pconn.Do("GET", "home"))
-	if err != nil {
-		log.Println(err.Error())
-	}
-	fmt.Println("pool get value", res)
+	Redisconn = conn
 }
+
+func SADD(keyValue ...string) error {
+		_, err := Redisconn.Do("SADD", keyValue[0], keyValue[1])
+		if err != nil {
+			log.Info(err.Error())
+			return err
+		}
+		return nil
+}
+
+func SCARD(key string) (int, error) {
+	res, err := redis.Int(Redisconn.Do("SCARD", key))
+	if err != nil {
+		log.Info(err.Error())
+		return 0, err
+	}
+	return res,nil
+}
+
+func ToInt(value interface{}, err error)(int, error){
+	res, err := redis.Int(value,nil)
+	if err != nil{
+		log.Info("to int err:", err)
+		return 0, err
+	}
+	return res,nil
+}
+
+
+//func main() {
+//	conn, err := redisConn("tcp", "127.0.0.1:6379")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//
+//	defer conn.Close()
+//
+//	redisConn := &RedisConn{conn: conn}
+//	err = redisConn.SetString("name", "JayeWu")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//
+//	err = redisConn.SetExpire("name", 10)
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//
+//	name, err := redisConn.GetString("name")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	fmt.Println(name)
+//
+//	redisConn.mSet("name", "Jaye", "sex", "男")
+//	redisConn.mGet("name", "sex")
+//
+//	fmt.Println("########list########")
+//	redisConn.lPush()
+//	res, err := redisConn.conn.Do("LRANGE", "list1", 1, 2)
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	fmt.Printf("%s\n", res)
+//	redisConn.lPop()
+//
+//	fmt.Println("$$$$$$$$$$hash$$$$$$$$$$")
+//	redisConn.hashSet()
+//	redisConn.hashGet()
+//
+//	fmt.Println("$$$$$$$$$$hash-M$$$$$$$$$$")
+//	redisConn.hashMSet()
+//	redisConn.hashMGet()
+//
+//	fmt.Println("###########Pool############")
+//	pconn := Pool.Get()
+//	_, err = pconn.Do("SET", "home", "102004")
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	res, err = redis.String(pconn.Do("GET", "home"))
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	fmt.Println("pool get value", res)
+//}

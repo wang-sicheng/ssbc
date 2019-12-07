@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
+	"github.com/ssbc/lib/redis"
 	"sync"
 	"time"
 )
@@ -12,13 +13,14 @@ var (
 	vm sync.Mutex
 	voteCount int = 0
 	revoCount int = 0
-	commonTrans int = 1
+	commonTrans int = 1  //leader
 	votes = sync.Map{}
 	//votes = make(map[string]chan *Vote)
 	revotes = sync.Map{}
 	//revotes = make(map[string]chan *ReVote)
 	tmpBlock *common.Block
 	voteCounts int = 4
+	Ports string
 )
 
 
@@ -85,17 +87,32 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err !=nil{
 		log.Info("ERR recBlockVoteRound1Handler: ", err)
 	}
-	//if _,ok := votes[v.Hash];ok{
-	var voteChan chan *Vote
-	if vs,ok:=votes.Load(v.Hash);ok{
-		voteChan,_ =vs.(chan *Vote)
-		voteChan <- v
+	conn := redis.Pool.Get()
+	defer conn.Close()
+
+	_,err = conn.Do("SADD",v.Hash+Ports,v.Sender+string(v.Vote))
+	if err != nil{
+		log.Info("err: ", err)
 	}
-	vc := len(voteChan)
+	//redis.SADD(v.Hash, v.Sender+string(v.Vote))
+	//if _,ok := votes[v.Hash];ok{
+	//var voteChan chan *Vote
+
+	//if vs,ok:=votes.Load(v.Hash);ok{
+	//	voteChan,_ =vs.(chan *Vote)
+	//	voteChan <- v.Hash
+	//}
+	//vc := len(voteChan)
 		//votes[v.Hash] <- v
 		// vc := len(votes[v.Hash])
+	//vc,err := redis.SCARD(v.Hash)
+	vc,err := redis.ToInt(conn.Do("SCARD",v.Hash+Ports))
+	if err !=nil{
+		log.Info("recBlockVoteRound1Handler err:", err)
+	}
 	log.Info("recBlockVoteRound1Handler voteCount : ",vc)
 	if vc == voteCounts{
+		log.Info("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
 		go voteForRoundNew(v.Hash)
 	}
 	//}
@@ -130,16 +147,32 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 		log.Info("ERR recBlockVoteRound2Handler: ", err)
 	}
 	//revotes[v.Hash] <- v
-	var revoteChan chan *ReVote
-	if vs,ok:=revotes.Load(v.Hash);ok{
-		revoteChan,_ =vs.(chan *ReVote)
-		revoteChan <- v
+	conn := redis.Pool.Get()
+	defer conn.Close()
+
+	_,err = conn.Do("SADD",v.Hash+Ports+v.Sender,v.Sender)
+	if err != nil{
+		log.Info("err: ", err)
 	}
-	vc := len(revoteChan)
-	log.Info("recBlockVoteRound2Handler revoCount : ",vc)
+	vc,err := redis.ToInt(conn.Do("SCARD",v.Hash+Ports+v.Sender))
+	if err !=nil{
+		log.Info("recBlockVoteRound1Hand2er err:", err)
+	}
+	log.Info("recBlockVoteRound1Hand2er revoteCount : ",vc)
 	if vc == voteCounts{
+		log.Info("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
 		go statistic(v)
 	}
+	//var revoteChan chan *ReVote
+	//if vs,ok:=revotes.Load(v.Hash);ok{
+	//	revoteChan,_ =vs.(chan *ReVote)
+	//	revoteChan <- v
+	//}
+	//vc := len(revoteChan)
+	//log.Info("recBlockVoteRound2Handler revoCount : ",vc)
+	//if vc == voteCounts{
+	//	go statistic(v)
+	//}
 	//vm.Lock()
 	//revoCount++
 	//log.Info("recBlockVoteRound2Handler revoCount: ",revoCount)
@@ -169,46 +202,46 @@ func voteHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	return nil, nil
 }
 
-func voteForRound(v *Vote){
-	//when receive whole nodes votes
-	//then statistics
-
-
-	store_vote(v)
-	rv := &ReVote{Sender:"zhuanfa", Vote: []*Vote{v}}
-	b, err := json.Marshal(rv)
-	if err != nil{
-		log.Info("voteForRound: ",err)
-		return
-	}
-
-	Broadcast("recBlockVoteRound2",b)
-
-}
+//func voteForRound(v *Vote){
+//	//when receive whole nodes votes
+//	//then statistics
+//
+//
+//	store_vote(v)
+//	rv := &ReVote{Sender:"zhuanfa", Vote: []*Vote{v}}
+//	b, err := json.Marshal(rv)
+//	if err != nil{
+//		log.Info("voteForRound: ",err)
+//		return
+//	}
+//
+//	Broadcast("recBlockVoteRound2",b)
+//
+//}
 func voteForRoundNew(hash string){
 	//when receive whole nodes votes
 	//then statistics
 
 	vs:=[]*Vote{}
-	var voteChan chan *Vote
-	if vs,ok:=votes.Load(hash);ok{
-		voteChan,_ =vs.(chan *Vote)
-
-	}
-	for i:=0;i<voteCounts;i++{
-		vs = append(vs,<- voteChan)
-	}
-	//close(votes[hash])
-	//delete(votes, hash)
-	close(voteChan)
-	votes.Delete(hash)
-	rv := &ReVote{Sender:"zhuanfa", Vote: vs, Hash:hash}
+	//var voteChan chan *Vote
+	//if vs,ok:=votes.Load(hash);ok{
+	//	voteChan,_ =vs.(chan *Vote)
+	//
+	//}
+	//for i:=0;i<voteCounts;i++{
+	//	vs = append(vs,<- voteChan)
+	//}
+	////close(votes[hash])
+	////delete(votes, hash)
+	//close(voteChan)
+	//votes.Delete(hash)
+	rv := &ReVote{Sender : Ports, Vote: vs, Hash:hash}
 	b, err := json.Marshal(rv)
 	if err != nil{
 		log.Info("voteForRound: ",err)
 		return
 	}
-	revotes.Store(rv.Hash,make(chan *ReVote, 10))
+	//revotes.Store(rv.Hash,make(chan *ReVote, 10))
 	//revotes[rv.Hash] = make(chan *ReVote, 10)
 	Broadcast("recBlockVoteRound2",b)
 
@@ -247,7 +280,7 @@ func verify(block *common.Block){
 		votes.Store(block.Hash,make(chan *Vote,10))
 		//votes[block.Hash] = make(chan *Vote,10)
 		tmpBlock = block
-		v := &Vote{Sender : "hihihi",Hash : block.Hash, Vote : 1 }
+		v := &Vote{Sender : Ports, Hash : block.Hash, Vote : 1 }
 		b, err := json.Marshal(v)
 		if err != nil{
 			log.Info("verify_block: ", err)
@@ -266,15 +299,15 @@ func statistic(rv *ReVote){
 	if tmpBlock.Hash == rv.Hash{
 		log.Info("Pulling out tmpBlock")
 	}
-	var revoteChan chan *ReVote
-	if vs,ok:=revotes.Load(rv.Hash);ok{
-		revoteChan,_ =vs.(chan *ReVote)
-
-	}
-	//close(revotes[rv.Hash])
-	//delete(revotes, rv.Hash)
-	close(revoteChan)
-	revotes.Delete(rv.Hash)
+	//var revoteChan chan *ReVote
+	//if vs,ok:=revotes.Load(rv.Hash);ok{
+	//	revoteChan,_ =vs.(chan *ReVote)
+	//	close(revoteChan)
+	//}
+	////close(revotes[rv.Hash])
+	////delete(revotes, rv.Hash)
+	//
+	//revotes.Delete(rv.Hash)
 	log.Info("store the block")
 	store_block()
 	log.Info("Successfully stored the block")

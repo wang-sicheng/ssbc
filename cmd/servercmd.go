@@ -10,6 +10,7 @@ import (
 	"github.com/ssbc/lib/net"
 	"github.com/ssbc/util"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -86,6 +87,8 @@ func (s *ServerCmd) init() {
 		//}
 		log.Info("Mysql Connection Open Successfully")
 		common.Init()
+		net.Ports = strconv.Itoa(s.getServer().Config.Port)
+		log.Info("Ports :",net.Ports)
 		err := s.getServer().Start()
 		if err != nil {
 			return err

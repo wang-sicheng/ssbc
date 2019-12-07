@@ -44,7 +44,7 @@ func SendTrans(){
 		t1 := time.Now()
 
 		b :=[]byte(`{"BPM": 10}`)
-		for i:=0 ; i< 1000 ; i++{
+		for i:=0 ; i< 20000 ; i++{
 			Broadcast("recTransHash",b)
 		}
 		time.Sleep(time.Second)
@@ -56,7 +56,9 @@ func SendTrans(){
 	//for i:=0 ;l-1-i>=0&&i<10;i++{
 	//	log.Info(common.Blockchain[i])
 	//}
-	time.Sleep(time.Second*20)
+	time.Sleep(time.Second*10)
+	log.Info("blockchain len",len(common.Blockchain))
+	log.Info("blockchain len",len(common.Blockchains))
 		log.Info("duration : ", t2.Sub(t1))
 
 
