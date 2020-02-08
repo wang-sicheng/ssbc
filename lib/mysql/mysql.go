@@ -71,7 +71,7 @@ func InsertBlock(block common.Block){
 }
 //插入数据
 func insertData(DB *sql.DB,block common.Block){
-	result,err := DB.Exec("insert INTO block(bIndex,Timestamp,BPM,Hash,PreHash) values(?,?,?,?,?)",block.Index,block.Timestamp,block.BPM,block.Hash,block.PrevHash)
+	result,err := DB.Exec("insert INTO block(bIndex,Timestamp,BPM,Hash,PreHash) values(?,?,?,?,?)",block.Index,block.Timestamp,block.Signature,block.Hash,block.PrevHash)
 	if err != nil{
 		fmt.Printf("Insert failed,err:%v",err)
 		return

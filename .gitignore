@@ -1,0 +1,20 @@
+
+# 此为注释 – 将被 Git 忽略
+# 忽略所有 .a 结尾的文件
+*.a
+# 但 lib.a 除外
+!lib.a
+# 仅仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+/TODO
+# 忽略 build/ 目录下的所有文件
+port8001/
+port8002/
+port8003/
+.idea/
+# 会忽略 doc/notes.txt 但不包括 doc/server/arch.txt
+doc/*.txt
+# 忽略 doc/ 目录下所有扩展名为 txt 的文件
+doc/**/*.txt
+————————————————
+版权声明：本文为CSDN博主「阳仔_2014」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/nefuyang/article/details/82707980

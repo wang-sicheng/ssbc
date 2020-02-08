@@ -93,13 +93,13 @@ registry:
 #  The datasource value depends on the type.
 #  If the type is "sqlite3", the datasource value is a file name to use
 #  as the database store.  Since "sqlite3" is an embedded database, it
-#  may not be used if you want to run the fabric-ca-server in a cluster.
+#  may not be used if you want to run the server in a cluster.
 #  To run the fabric-ca-server in a cluster, you must choose "postgres"
 #  or "mysql".
 #############################################################################
 db:
-  type: sqlite3
-  datasource: fabric-ca-server.db
+  type: mysql
+  datasource: ssbc.db
   tls:
       enabled: false
       certfiles:

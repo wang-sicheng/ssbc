@@ -24,7 +24,7 @@ type Req struct {
 }
 var clients []*Client
 
-var Urls []string = []string{"http://127.0.0.1:8000","http://127.0.0.1:8001","http://127.0.0.1:8002","http://127.0.0.1:8003"}
+var Urls []string = []string{"http://127.0.0.1:8000"}
 
 func init(){
 	for _,k := range Urls {
@@ -60,8 +60,10 @@ func Broadcast(s string,reqBody []byte)error{
 			return err
 		}
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;")
-
 		err = client.SendReq(req, nil)
+		if err != nil{
+			return err
+		}
 
 	}
 	return nil

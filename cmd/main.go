@@ -27,8 +27,7 @@ func main() {
   if err := RunMain(os.Args); err != nil {
     os.Exit(1)
   }
-  //block := common.Block{2,"",3,"",""}
-  //mysql.InsertBlock(block)
+
 
 }
 func RunMain(args []string) error {

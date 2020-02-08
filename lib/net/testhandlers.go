@@ -1,14 +1,21 @@
 package net
 
 import (
-	"fmt"
 	"github.com/cloudflare/cfssl/log"
-	"github.com/ssbc/common"
 	"time"
+	"encoding/hex"
+	"encoding/json"
+	"github.com/ssbc/common"
+	"crypto/sha256"
+	"github.com/ssbc/lib/redis"
 )
 
-
-var t2 time.Time
+var(
+	t1 time.Time
+	t2 time.Time
+	flag bool = true
+	times int = 0
+)
 type TestInfo struct {
 
 	TName string
@@ -21,6 +28,7 @@ func newTestInfoEndpoint(s *Server) *serverEndpoint {
 		Methods: []string{"GET", "POST", "HEAD"},
 		Handler: testinfoHandler,
 		Server:  s,
+		successRC: 200,
 	}
 }
 
@@ -30,9 +38,14 @@ type TestInfoResponseNet struct {
 	Version string
 }
 func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-	b,err := ctx.ReadBodyBytes()
+
+
+	log.Info("ctx.req.RemoteAddr: ",ctx.req.RemoteAddr)
+
+
+
 	go SendTrans()
-	fmt.Println(string(b),err)
+
 	resp := TestInfoResponseNet{
 		TName: "hello",
 		Version: "world",
@@ -41,26 +54,69 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 }
 
 func SendTrans(){
-		t1 := time.Now()
 
-		b :=[]byte(`{"BPM": 10}`)
-		for i:=0 ; i< 20000 ; i++{
-			Broadcast("recTransHash",b)
-		}
-		time.Sleep(time.Second)
-		log.Info("blockchain len",len(common.Blockchain))
-	    log.Info("blockchain len",len(common.Blockchains))
-	//log.Info("Now the newest 10 blocks is:")
-	//l :=len(common.Blockchain)
-	//log.Info("len of blockchain: " ,len(common.Blockchain))
-	//for i:=0 ;l-1-i>=0&&i<10;i++{
-	//	log.Info(common.Blockchain[i])
+		//b,err := json.Marshal(common.Tx100)
+		//if err != nil{
+		//	log.Info("test err : ",err)
+		//}
+		//for i:=0 ; i< 1 ; i++{
+		//	Broadcast("recTransHash",b)
+		//}
+		//time.Sleep(time.Second)
+	//trans := make(chan []byte,100)
+	//
+	//go transToRedis(trans)
+	//for i:=0;i<100;i++{
+	//	marshalTrans(trans)
 	//}
-	time.Sleep(time.Second*10)
-	log.Info("blockchain len",len(common.Blockchain))
-	log.Info("blockchain len",len(common.Blockchains))
-		log.Info("duration : ", t2.Sub(t1))
+	//for i:=0;i<10;i++{
+	//	recTrans()
+	//}
+	//log.Info("bye")
+	//return
+	recTrans()
+	if flag{
 
+		t1 = time.Now()
+		flag = false
+	}
+
+	a := pullTrans()
+	transhash := TransHash{}
+	transhash.BlockHash = currentBlock.Hash
+	m := make(map[string][]byte)
+	transCache4verify := []interface{}{"CommonTxCache4verify"}
+	for _,data := range a{
+		hash := sha256.Sum256(data)
+		hashString := hex.EncodeToString(hash[:])
+		transhash.TransHashs = append(transhash.TransHashs, hashString)
+		m[hashString] = data
+		transCache4verify = append(transCache4verify, data)
+	}
+	b,err := json.Marshal(transhash)
+	if err !=nil{
+		log.Info("test err: ", err)
+		return
+	}
+	mb,err := json.Marshal(m)
+	if err !=nil{
+		log.Info("test err m: ", err)
+		return
+	}
+
+	conn := redis.Pool.Get()
+	defer conn.Close()
+	_,err = conn.Do("SET", "CommonTxCache"+currentBlock.Hash, mb)
+	if err != nil{
+		log.Info("test err SET: ", err)
+	}
+	_,err = conn.Do("SADD", transCache4verify...)
+	if err != nil{
+		log.Info("test err SADD: ", err)
+	}
+
+	Broadcast("recTransHash",b)
+	log.Info("blockchain len",len(common.Blockchains))
 
 
 }
