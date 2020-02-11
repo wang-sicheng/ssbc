@@ -7,6 +7,12 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "1JVdzWYG1/UDN1TMdErpnJmKzuw=",
+			"path": "github.com/btcsuite/btcd/btcec",
+			"revision": "f3ec13030e4e828869954472cbc51ac36bee5c1d",
+			"revisionTime": "2019-11-13T02:27:49Z"
+		},
+		{
 			"checksumSHA1": "G8nNhMU01MJt5mCWYZlLy9IwNqc=",
 			"path": "github.com/cloudflare/cfssl/api",
 			"revision": "2001f384ec4fea8e6e648cd89d07bda9bd7568c1",
@@ -177,6 +183,11 @@
 			"path": "golang.org/x/crypto/pkcs12/internal/rc2",
 			"revision": "f99c8df09eb5bff426315721bfa5f16a99cad32c",
 			"revisionTime": "2019-04-11T19:51:25Z"
+		},
+		{
+			"checksumSHA1": "f51w0wL7u9Hy2kRebKr+x71HWm0=",
+			"path": "golang.org/x/crypto/sha3",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "k087lZ6MdivI/6AFgpEv4zxhaVw=",
