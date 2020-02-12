@@ -5,9 +5,9 @@ import (
 	"time"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/ssbc/common"
 	"crypto/sha256"
 	"github.com/ssbc/lib/redis"
+	"github.com/ssbc/common"
 )
 
 var(
@@ -41,11 +41,7 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 
 	log.Info("ctx.req.RemoteAddr: ",ctx.req.RemoteAddr)
-
-
-
 	go SendTrans()
-
 	resp := TestInfoResponseNet{
 		TName: "hello",
 		Version: "world",
@@ -55,37 +51,20 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 func SendTrans(){
 
-		//b,err := json.Marshal(common.Tx100)
-		//if err != nil{
-		//	log.Info("test err : ",err)
-		//}
-		//for i:=0 ; i< 1 ; i++{
-		//	Broadcast("recTransHash",b)
-		//}
-		//time.Sleep(time.Second)
-	//trans := make(chan []byte,100)
-	//
-	//go transToRedis(trans)
-	//for i:=0;i<100;i++{
-	//	marshalTrans(trans)
-	//}
-	//for i:=0;i<10;i++{
-	//	recTrans()
-	//}
-	//log.Info("bye")
-	//return
-	recTrans()
-	if flag{
 
+	if flag{
+		flushall()
+		//time.Sleep(time.Second)
+		recTrans()
 		t1 = time.Now()
 		flag = false
 	}
 
 	a := pullTrans()
 	transhash := TransHash{}
-	transhash.BlockHash = currentBlock.Hash
+	transhash.BlockHash = blockState.GetCurrB().Hash
 	m := make(map[string][]byte)
-	transCache4verify := []interface{}{"CommonTxCache4verify"}
+	transCache4verify := []interface{}{"CommonTxCache4verify"+ transhash.BlockHash}
 	for _,data := range a{
 		hash := sha256.Sum256(data)
 		hashString := hex.EncodeToString(hash[:])
@@ -106,7 +85,7 @@ func SendTrans(){
 
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	_,err = conn.Do("SET", "CommonTxCache"+currentBlock.Hash, mb)
+	_,err = conn.Do("SET", "CommonTxCache"+ transhash.BlockHash, mb)
 	if err != nil{
 		log.Info("test err SET: ", err)
 	}
@@ -114,9 +93,20 @@ func SendTrans(){
 	if err != nil{
 		log.Info("test err SADD: ", err)
 	}
-
+	log.Info("SendTran blockchain len: ",len(common.Blockchains))
 	Broadcast("recTransHash",b)
-	log.Info("blockchain len",len(common.Blockchains))
 
+
+
+}
+
+func flushall(){
+	conn := redis.Pool.Get()
+	defer conn.Close()
+	_,err := conn.Do("flushall")
+	if err != nil{
+		panic(err)
+	}
+	log.Info("flushall success")
 
 }

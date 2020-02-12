@@ -87,6 +87,7 @@ func (s *ServerCmd) init() {
 		//}
 		log.Info("Mysql Connection Open Successfully")
 		common.Init()
+		net.Init()
 		net.Ports = strconv.Itoa(s.getServer().Config.Port)
 		log.Info("Ports :",net.Ports)
 		err := s.getServer().Start()

@@ -8,10 +8,13 @@ import (
 //keys that already used
 //purpose, keys, type
 //transaction pool， transPool， List
-//common transaction cache， ConmonTxCache， String
+//common transaction cache， CommonTxCache， String       map[string][]byte
+//common transaction cache for verify, CommonTxCache4verify, Set
 //common Tx from nodes， CommonTx+currentBlock.Hash+sender, Set
 //received senders, CommonTx+currentBlock.Hash, Set
-
+//verify Block Tx Cache, verifyBlockTxCache+Block.hash, Set
+//vote round 1 vote cache, v.Hash+"round1", Set
+//vote round 2 vote cache, v.Hash+"round2", Set
 
 type RedisConn struct {
 	conn redis.Conn
@@ -87,6 +90,9 @@ func init() {
 	}
 	Redisconn = conn
 }
+
+
+
 
 func SADD(keyValue ...string) error {
 		_, err := Redisconn.Do("SADD", keyValue[0], keyValue[1])

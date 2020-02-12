@@ -28,6 +28,10 @@ func receiveBlockHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		log.Info("ERR receiveBlockHandler: ", err)
 	}
 	log.Info("receiveBlockHandler: ", newBlock)
+	if !blockState.Checkblock(newBlock){
+		log.Info("receiveBlockHandler: Hash mismatch. This round may finish")
+		return nil, nil
+	}
 	go verify(newBlock)
 	return nil, nil
 }
@@ -40,8 +44,8 @@ func verify(block *common.Block){
 		voteBool = true
 	}
 	log.Info("verify block: ",voteBool)
-	tmpBlock = block
-	v := &Vote{Sender : Ports, Hash : block.Hash, Vote : voteBool }
+	blockState.SetTmpB(*block)
+	v := &Vote{Sender : Sender, Hash : block.Hash, Vote : voteBool }
 	b, err := json.Marshal(v)
 	if err != nil{
 		log.Info("verify_block: ", err)
@@ -53,20 +57,20 @@ func verify(block *common.Block){
 
 func verify_block(block *common.Block)bool{
 	//验证逻辑 验签 验证交易 验证merkle tree root
+	currentBlock := blockState.GetCurrB()
 	if block.PrevHash != currentBlock.Hash{
+		log.Info("This round may finish")
 		return false
 	}
 	if block.Signature != "Signature"{
 		log.Info("verify block: Signature mismatch")
 		return false
 	}
-	return verifyBlockTx(block)
+	return verifyBlockTx(block,&currentBlock)
 }
 
-func verifyBlockTx(b *common.Block)bool{
-	if b.PrevHash != currentBlock.Hash{
-		log.Info("verifyBlockTx: This round may finish")
-	}
+func verifyBlockTx(b *common.Block, currentBlock *common.Block)bool{
+
 	transCache := []interface{}{"verifyBlockTxCache"+b.Hash}
 	for _,data := range b.TX{
 		b,err := json.Marshal(data)
@@ -84,7 +88,7 @@ func verifyBlockTx(b *common.Block)bool{
 	if err != nil{
 		log.Info("verifyBlockTx err SADD: ", err)
 	}
-	commonTrans,err := rd.Strings(conn.Do("SINTER", "verifyBlockTxCache"+b.Hash, "CommonTxCache4verify"))
+	commonTrans,err := rd.Strings(conn.Do("SINTER", "verifyBlockTxCache"+b.Hash, "CommonTxCache4verify"+ currentBlock.Hash))
 	if err !=nil{
 		log.Info("verifyBlockTx err SINTER: ", err)
 	}

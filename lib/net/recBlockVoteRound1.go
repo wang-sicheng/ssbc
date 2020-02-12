@@ -82,12 +82,12 @@ func voteForRoundNew(hash string){
 		log.Info("voteForRoundTwo: vote round has received more the 3/4 affirmative vote")
 		v = true
 	}
-	rv := &ReVote{Sender: Ports, Vote: vs, Hash: hash, V: v}
+	rv := &ReVote{Sender: Sender, Vote: vs, Hash: hash, V: v}
 	b, err := json.Marshal(rv)
 	if err != nil{
 		log.Info("voteForRoundTwo err json: ",err)
 	}
-	log.Info("recBlockVoteRound1Handler vote:", string(b))
+	log.Info("recBlockVoteRound1Handler vote: ", string(b))
 	Broadcast("recBlockVoteRound2",b)
 
 }

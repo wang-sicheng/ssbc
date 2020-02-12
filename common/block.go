@@ -38,6 +38,8 @@ type Transaction struct{
 
 var Blockchains = make(chan Block , 100000)
 
+var B Block
+
 var Tx100 []Transaction
 
 var mutex = &sync.Mutex{}
@@ -90,6 +92,9 @@ func Init(){
 	genesisBlock.Merkle = genesisBlock.GenerateMerkelRoot()
 	log.Info("GenesisBlock: ",genesisBlock)
 	Blockchains <- genesisBlock
+	B = genesisBlock
+	log.Info("Block Init Successfully.")
+
 
 }
 

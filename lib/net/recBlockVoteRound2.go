@@ -43,10 +43,10 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	}
 	vc,err := redis.ToInt(conn.Do("SCARD",v.Hash+"round2"))
 	if err !=nil{
-		log.Info("recBlockVoteRound1Hand2er err:", err)
+		log.Info("recBlockVoteRound2Handler err:", err)
 	}
-	log.Info("recBlockVoteRound1Hand2er revoteCount : ",vc)
-	if vc == voteCounts{
+	log.Info("recBlockVoteRound2Handler revoteCount : ",vc)
+	if vc == Nodes{
 		log.Info("statistic the votes")
 		go statistic(v.Hash)
 	}
@@ -56,7 +56,10 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 func statistic(hash string){
 	//statistic 2 round vote
 	// then decide whether store the block or not
-
+	if blockState.Checks(hash){
+		log.Info("store_block: This round may finished")
+		return
+	}
 	conn := redis.Pool.Get()
 	defer conn.Close()
 	vs,err := rd.ByteSlices(conn.Do("SMEMBERS", hash+"round2"))
@@ -79,6 +82,7 @@ func statistic(hash string){
 			votecount++
 		}
 	}
+	log.Info("revote for ture: ", votecount)
 	if float64(votecount) > float64(Nodes)* 0.75{
 		log.Info("recBlockVoteRound2Handler: vote round tow has received more than 3/4 affirmative votes")
 		store_block(hash)
@@ -87,23 +91,20 @@ func statistic(hash string){
 
 
 func store_block(hash string){
-	if tmpBlock.Hash == hash{
-		log.Info("Pulling out tmpBlock")
-	}
+
+	log.Info("Pulling out tmpBlock")
 	log.Info("store the block")
 	//lib.Db.insert(block)
-	log.Info("store the block into Mysql")
-	log.Info("Successfully stored the block")
-	common.Blockchains <- *tmpBlock
-	currentBlock = *tmpBlock
+	blockState.StoreBlock()
 	t2 =time.Now()
 	log.Info("duration: ",t2.Sub(t1))
 	log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
-	if times+2 != len(common.Blockchains){
-		panic("mismatch")
-	}
+	//if times+2 != len(common.Blockchains){
+	//	panic("mismatch")
+	//}
 	if times < 199{
 		times++
+		//time.Sleep(time.Second)
 		SendTrans()
 	}
 

@@ -13,9 +13,7 @@ import (
 	"hash"
 	"bytes"
 
-	"time"
 	"strconv"
-
 )
 
 type TestContent struct {
@@ -204,7 +202,7 @@ func pullTrans()[][]byte{
 		if transs !=nil{
 			comTransSet = append(comTransSet, transs[1])
 		}
-		if transs == nil || len(comTransSet) >= 1000{
+		if transs == nil || len(comTransSet) >= 10{
 					break
 		}
 	}
@@ -242,12 +240,12 @@ func pullTrans()[][]byte{
 
 func generateTx()[]common.Transaction{
 	res := []common.Transaction{}
-	for i := 0; i <= 1000; i++{
-		cur := time.Now()
+	for i := 0; i <= 100000; i++{
+		//cur := time.Now()
 		tmp := common.Transaction{
-			From:strconv.Itoa(int(cur.Unix())+i),
+			From:strconv.Itoa(i),//int(cur.Unix())+
 			To:"To",
-			Timestamp:cur.String(),
+			Timestamp: strconv.Itoa(i), //cur.String(),
 			Signature:"Signature",
 			Message:"Message",
 		}

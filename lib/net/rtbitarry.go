@@ -40,13 +40,14 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 func findCommonTrans(trans TransHash, sender string){
 	
-
+	currentBlock := blockState.GetCurrB()
 	if trans.BlockHash != currentBlock.Hash{
-		panic("findCommonTrans: BlockHash mismatch. This round may finish.")
+		log.Info("findCommonTrans: BlockHash mismatch. This round may finish.")
+		return
 	}
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	data := []interface{}{"CommonTx"+currentBlock.Hash+sender}
+	data := []interface{}{"CommonTx"+ currentBlock.Hash + sender}
 	for _,d := range trans.TransHashs{
 		data = append(data, d)
 	}
@@ -56,12 +57,12 @@ func findCommonTrans(trans TransHash, sender string){
 		log.Info("findCommonTrans err SADD trans: ", err)
 	}
 	//redis the senders
-	_,err = conn.Do("SADD", "CommonTx"+currentBlock.Hash, "CommonTx"+currentBlock.Hash+sender)
+	_,err = conn.Do("SADD", "CommonTx"+ currentBlock.Hash, "CommonTx"+ currentBlock.Hash+ sender)
 	if err != nil{
 		log.Info("findCommonTrans err SADD senders: ", err)
 	}
 	//check the len of the senders
-	l,err := rd.Int(conn.Do("SCARD", "CommonTx"+currentBlock.Hash))
+	l,err := rd.Int(conn.Do("SCARD", "CommonTx"+ currentBlock.Hash))
 	if err !=nil{
 		log.Info("findCommonTrans err SCARD: ", err)
 	}
@@ -77,7 +78,7 @@ func findCommonTrans(trans TransHash, sender string){
 	}
 
 	//find the common trans
-	senders,err := rd.Strings(conn.Do("SMEMBERS", "CommonTx"+currentBlock.Hash))
+	senders,err := rd.Strings(conn.Do("SMEMBERS", "CommonTx"+ currentBlock.Hash))
 	if err !=nil{
 		log.Info("findCommonTrans err SMEMBERS: ", err)
 	}
@@ -91,13 +92,13 @@ func findCommonTrans(trans TransHash, sender string){
 		log.Info("findCommonTrans err SINTER: ", err)
 	}
 	log.Info("findCommonTrans commonTrans: ", commonTrans)
-	generateFromCommonTx(commonTrans)
+	generateFromCommonTx(commonTrans, currentBlock)
 }
 
-func generateFromCommonTx(commonTrans []string){
+func generateFromCommonTx(commonTrans []string, currentBlock common.Block){
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	mb,err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))
+	mb,err := rd.Bytes(conn.Do("GET", "CommonTxCache"+ currentBlock.Hash))
 	if err !=nil{
 		log.Info("generateFromCommonTx err GET: ", err)
 	}
@@ -119,7 +120,7 @@ func generateFromCommonTx(commonTrans []string){
 		}
 	}
 	b := common.Block{TX:trans}
-	b = common.GenerateBlock(currentBlock,b)
+	b = common.GenerateBlock(currentBlock, b)
 	bb, err := json.Marshal(b)
 	if err != nil{
 		log.Info("generateFromCommonTx err json block: ", err)
