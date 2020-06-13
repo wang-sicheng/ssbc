@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestStart(t *testing.T) {
-	fmt.Println("test")
 
+func TestM(t *testing.T)  {
+	fmt.Println("master")
 }
