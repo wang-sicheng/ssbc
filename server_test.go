@@ -1,7 +1,11 @@
 package main
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestStart(t *testing.T) {
+	fmt.Println("test")
 
 }
