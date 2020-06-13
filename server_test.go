@@ -7,5 +7,5 @@ import (
 
 
 func TestM(t *testing.T)  {
-	fmt.Println("test_merge")
+	fmt.Println("master")
 }
