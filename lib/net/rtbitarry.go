@@ -27,6 +27,10 @@ func receive_trans_bitarry(s *Server)*serverEndpoint{
 //接收交易hash
 func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	b,err := ctx.ReadBodyBytes()
+	if err != nil{
+		log.Info("rtbitarry Readbody err: ", err)
+		return nil, err
+	}
 	transHash := TransHash{}
 	err = json.Unmarshal(b, &transHash)
 	if err != nil{
@@ -71,7 +75,7 @@ func findCommonTrans(trans TransHash, sender string){
 		log.Info("findCommonTrans: Not Leader", isSelfLeader)
 		return
 	}
-
+	log.Info("Leader Mode")
 	if l != Nodes{
 		log.Info("findCommonTrans: Do not get enough nodes ", l)
 		return

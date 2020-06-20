@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/ssbc/lib/redis"
 	rd "github.com/gomodule/redigo/redis"
+	"time"
 )
 
 func receiveBlock(s *Server)*serverEndpoint{
@@ -27,10 +28,25 @@ func receiveBlockHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	if err !=nil{
 		log.Info("ERR receiveBlockHandler: ", err)
 	}
-	log.Info("receiveBlockHandler: ", newBlock)
+	log.Info("receiveBlockHandler newBlock: ", newBlock)
 	if !blockState.Checkblock(newBlock){
 		log.Info("receiveBlockHandler: Hash mismatch. This round may finish")
 		return nil, nil
+	}
+	switch Testflag {
+	case "rtb":
+		t2 = time.Now()
+		dura := t2.Sub(t1)
+		log.Info("duration: ",dura)
+		log.Info("times : ", times+1 )
+		if times + 1 < rounds{
+			times++
+			//time.Sleep(time.Second)
+			go SendTrans()
+		}
+		return nil, nil
+
+
 	}
 	go verify(newBlock)
 	return nil, nil

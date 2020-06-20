@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ssbc/common"
-	"github.com/ssbc/lib/net"
+	"github.com/ssbc/lib/docker/lib/net"
 	"github.com/ssbc/util"
 	"path/filepath"
 	"strconv"

@@ -202,7 +202,7 @@ func pullTrans()[][]byte{
 		if transs !=nil{
 			comTransSet = append(comTransSet, transs[1])
 		}
-		if transs == nil || len(comTransSet) >= 10{
+		if transs == nil || len(comTransSet) >= transinblock{
 					break
 		}
 	}
@@ -240,7 +240,7 @@ func pullTrans()[][]byte{
 
 func generateTx()[]common.Transaction{
 	res := []common.Transaction{}
-	for i := 0; i <= 100000; i++{
+	for i := 0; i <= transtoredis; i++{
 		//cur := time.Now()
 		tmp := common.Transaction{
 			From:strconv.Itoa(i),//int(cur.Unix())+
