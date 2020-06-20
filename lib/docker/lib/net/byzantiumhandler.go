@@ -113,8 +113,6 @@ func (bs *BlockState) CheckAndStore(hash string){
 	log.Info("Successfully stored the block", bs.tmpBlock)
 	common.Blockchains <- bs.tmpBlock
 	bs.currBlock = bs.tmpBlock
-	//send block to sc
-	//sendTxToSC(bs.currBlock)
 	t2 = time.Now()
 	log.Info("duration: ",t2.Sub(t1))
 	log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
@@ -155,10 +153,6 @@ func voteHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 }
 
 
-
-func store_vote(v *Vote){
-
-}
 
 
 

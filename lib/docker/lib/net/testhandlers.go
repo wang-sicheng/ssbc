@@ -3,11 +3,7 @@ package net
 import (
 	"github.com/cloudflare/cfssl/log"
 	"time"
-	"encoding/hex"
-	"encoding/json"
-	"crypto/sha256"
 	"github.com/ssbc/lib/redis"
-	"github.com/ssbc/common"
 )
 
 var(
@@ -81,46 +77,11 @@ func SendTrans(){
 	if flag{
 		//flushall()
 		//time.Sleep(time.Second)
-		recTrans()
+
 		t1 = time.Now()
 		flag = false
 	}
-	a := pullTrans()
-	transhash := TransHash{}
-	transhash.BlockHash = blockState.GetCurrB().Hash
-	m := make(map[string][]byte)
-	transCache4verify := []interface{}{"CommonTxCache4verify"+ transhash.BlockHash}
-	for _,data := range a{
-		hash := sha256.Sum256(data)
-		hashString := hex.EncodeToString(hash[:])
-		transhash.TransHashs = append(transhash.TransHashs, hashString)
-		m[hashString] = data
-		transCache4verify = append(transCache4verify, data)
-	}
-	b,err := json.Marshal(transhash)
-	if err !=nil{
-		log.Info("test err: ", err)
-		return
-	}
-	mb,err := json.Marshal(m)
-	if err !=nil{
-		log.Info("test err m: ", err)
-		return
-	}
 
-	conn := redis.Pool.Get()
-	defer conn.Close()
-	_,err = conn.Do("SET", "CommonTxCache"+ transhash.BlockHash, mb)
-	if err != nil{
-		log.Info("test err SET: ", err)
-	}
-	_,err = conn.Do("SADD", transCache4verify...)
-	if err != nil{
-		log.Info("test err SADD: ", err)
-	}
-	log.Info("SendTran blockchain len: ",len(common.Blockchains))
-
-	Broadcast("recTransHash",b)
 
 
 

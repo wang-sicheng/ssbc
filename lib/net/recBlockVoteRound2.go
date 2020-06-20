@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"github.com/ssbc/lib/redis"
 	rd "github.com/gomodule/redigo/redis"
-	"github.com/ssbc/common"
-	"time"
 )
 
 type ReVote struct{
@@ -84,28 +82,14 @@ func statistic(hash string){
 	}
 	log.Info("revote for ture: ", votecount)
 	if float64(votecount) > float64(Nodes)* 0.75{
-		log.Info("recBlockVoteRound2Handler: vote round tow has received more than 3/4 affirmative votes")
+		log.Info("recBlockVoteRound2Handler: vote round tow has received more than 2/3 affirmative votes")
 		store_block(hash)
 	}
 }
 
 
 func store_block(hash string){
+	blockState.CheckAndStore(hash)
 
-	log.Info("Pulling out tmpBlock")
-	log.Info("store the block")
-	//lib.Db.insert(block)
-	blockState.StoreBlock()
-	t2 =time.Now()
-	log.Info("duration: ",t2.Sub(t1))
-	log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
-	//if times+2 != len(common.Blockchains){
-	//	panic("mismatch")
-	//}
-	if times < 199{
-		times++
-		//time.Sleep(time.Second)
-		SendTrans()
-	}
 
 }
