@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"encoding/hex"
 	"crypto/sha256"
+	"github.com/spf13/viper"
+	docker "github.com/fsouza/go-dockerclient"
 )
 func main() {
 	file,err := os.Create("D:/hello.go")
@@ -147,4 +149,11 @@ func compile(sc *SmartContractInit)(string, error){
 
 func execute(){
 
+}
+
+func NewDockerClient() (client *docker.Client, err error) {
+	endpoint := viper.GetString("vm.endpoint")
+	client, err = docker.NewClient(endpoint)
+
+	return
 }
