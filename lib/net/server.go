@@ -107,7 +107,7 @@ func (s *Server) Start() (err error) {
 	}
 
 	// Initialize the server
-	err = s.init(false)
+	err = s.init(false)	// 设置主目录和配置文件
 	if err != nil {
 		err2 := s.closeDB()
 		if err2 != nil {
@@ -147,10 +147,10 @@ func (s *Server) listenAndServe() (err error) {
 	if c.Port == 0 {
 		c.Port = DefaultServerPort
 	}
-	addr := net.JoinHostPort(c.Address, strconv.Itoa(c.Port))
+	addr := net.JoinHostPort(c.Address, strconv.Itoa(c.Port))	// 将 host 和 post 组装成地址（socket）
 	var addrStr string
 	addrStr = fmt.Sprintf("http://%s", addr)
-	listener, err = net.Listen("tcp", addr)
+	listener, err = net.Listen("tcp", addr)		// 监听 socket tcp
 	if err != nil {
 		return errors.Wrapf(err, "TCP listen failed for %s", addrStr)
 	}
