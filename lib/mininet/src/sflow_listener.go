@@ -12,7 +12,7 @@ func sFlowParser(buffer []byte) {
 	d := sflow.NewDecoder(reader)
 	dgram, err := d.Decode()
 	if err != nil {
-		fmt.Println("Decode err",err)
+		fmt.Println("Decode err", err)
 
 		return
 	}
@@ -45,7 +45,7 @@ func sFlowListener(AppState *app_state, SFlowConfig sflow_config) (err error) {
 		return err
 	}
 	defer conn.Close()
-	for AppState.Running{
+	for AppState.Running {
 		data := make([]byte, 10000)
 		read, remoteAddr, err := conn.ReadFromUDP(data)
 		if err != nil {
@@ -83,8 +83,6 @@ func sFlowListener(AppState *app_state, SFlowConfig sflow_config) (err error) {
 	//	}
 	//
 	//}
-
-
 
 	return nil
 }

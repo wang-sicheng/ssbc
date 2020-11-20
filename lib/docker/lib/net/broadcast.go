@@ -10,23 +10,20 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
-
 )
 
 type Client struct {
-
 	httpClient *http.Client
-	Url string
+	Url        string
 }
 
 type Req struct {
-
 }
+
 var clients []*Client
 
-
-func init(){
-	for _,k := range Urls {
+func init() {
+	for _, k := range Urls {
 		client := &Client{
 			Url: k,
 		}
@@ -40,27 +37,23 @@ func init(){
 			},
 		}
 
-
 		clients = append(clients, client)
 	}
 }
 
-func Broadcast(s string,reqBody []byte)error{
+func Broadcast(s string, reqBody []byte) error {
 
-	for _,client := range clients{
-
-
-
+	for _, client := range clients {
 
 		endPoint := client.Url + "/" + s
 
-		req,err := NewPost(endPoint, reqBody)
-		if err != nil{
+		req, err := NewPost(endPoint, reqBody)
+		if err != nil {
 			return err
 		}
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;")
 		err = client.SendReq(req, nil)
-		if err != nil{
+		if err != nil {
 			return err
 		}
 
@@ -68,8 +61,7 @@ func Broadcast(s string,reqBody []byte)error{
 	return nil
 }
 
-
-func NewPost(endPoint string, reqBody []byte)(*http.Request, error){
+func NewPost(endPoint string, reqBody []byte) (*http.Request, error) {
 	req, err := http.NewRequest("POST", endPoint, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed posting to %s", endPoint)
@@ -78,11 +70,10 @@ func NewPost(endPoint string, reqBody []byte)(*http.Request, error){
 
 }
 
-func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
+func (c *Client) SendReq(req *http.Request, result interface{}) (err error) {
 	reqStr := "test"
 
-//	log.Info("Sending request\n")
-
+	//	log.Info("Sending request\n")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -100,7 +91,7 @@ func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 		if err != nil {
 			return errors.Wrapf(err, "Failed to read response of request: %s", reqStr)
 		}
-	//	log.Info("Received response\n")
+		//	log.Info("Received response\n")
 	}
 
 	var body *cfsslapi.Response
@@ -139,8 +130,6 @@ func (c *Client)SendReq(req *http.Request, result interface{}) (err error) {
 	}
 	return nil
 }
-
-
 
 func (c *Client) initHTTPClient() error {
 	tr := new(http.Transport)

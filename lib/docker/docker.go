@@ -1,28 +1,29 @@
 package docker
 
 import (
-	"fmt"
-	"os/exec"
-	"github.com/ssbc/common"
-	"encoding/json"
-	"github.com/cloudflare/cfssl/log"
 	"bytes"
-	"os"
-	"errors"
-	"io/ioutil"
-	"encoding/hex"
 	"crypto/sha256"
-	"github.com/spf13/viper"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/cloudflare/cfssl/log"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/spf13/viper"
+	"github.com/ssbc/common"
+	"io/ioutil"
+	"os"
+	"os/exec"
 )
+
 func main() {
-	file,err := os.Create("D:/hello.go")
-	if err != nil{
+	file, err := os.Create("D:/hello.go")
+	if err != nil {
 		fmt.Println(err)
 	}
 
 	code := []byte(
-`package main
+		`package main
 
 import (
 	"fmt"
@@ -33,7 +34,7 @@ func main() {
 	fmt.Println("Hello World")
 }
 	`)
-	_,err = file.Write(code)
+	_, err = file.Write(code)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -57,57 +58,54 @@ func main() {
 
 }
 
-type SmartContractInit struct{
-	SCNAME string
+type SmartContractInit struct {
+	SCNAME  string
 	CREATER string
 	Version string
-	Data []byte
+	Data    []byte
 }
 
-type SmartContractDefinition struct{
-	SCNAME string
-	Hash string
+type SmartContractDefinition struct {
+	SCNAME  string
+	Hash    string
 	Version string
-
 }
 
-func IsSmartContract(tx *common.Transaction)bool{
-	if  tx.To == "0"{
+func IsSmartContract(tx *common.Transaction) bool {
+	if tx.To == "0" {
 		return true
 	}
 	return false
 }
 
-func GenerateSCSpec(tx *common.Transaction)(*SmartContractInit, error){
+func GenerateSCSpec(tx *common.Transaction) (*SmartContractInit, error) {
 	scinit := &SmartContractInit{}
 	err := json.Unmarshal([]byte(tx.Message), scinit)
-	if err != nil{
+	if err != nil {
 		log.Info("generateSCSpec err json :", err)
 		return nil, err
 	}
 	return scinit, nil
 }
 
-func transToDocker(){
+func transToDocker() {
 
 }
 
-func Compile(sc *SmartContractInit)(*SmartContractDefinition,error){
-	if preCompole(sc){
-		hash,err := compile(sc)
-		if err != nil{
+func Compile(sc *SmartContractInit) (*SmartContractDefinition, error) {
+	if preCompole(sc) {
+		hash, err := compile(sc)
+		if err != nil {
 			return nil, err
 		}
-		scd := & SmartContractDefinition{SCNAME: sc.SCNAME, Hash:hash, Version: sc.Version}
+		scd := &SmartContractDefinition{SCNAME: sc.SCNAME, Hash: hash, Version: sc.Version}
 		return scd, nil
 	}
-
-
 
 	return nil, nil
 }
 
-func preCompole(sc *SmartContractInit)bool{
+func preCompole(sc *SmartContractInit) bool {
 	// check if already exists
 	//check version
 	//check sig
@@ -115,18 +113,18 @@ func preCompole(sc *SmartContractInit)bool{
 	return true
 }
 
-func compile(sc *SmartContractInit)(string, error){
-	file,err := os.Create("D:/"+ sc.SCNAME+ ".go")
-	if err != nil{
+func compile(sc *SmartContractInit) (string, error) {
+	file, err := os.Create("D:/" + sc.SCNAME + ".go")
+	if err != nil {
 		log.Info("compile err file: ", err)
 	}
-	_,err = file.Write(sc.Data)
+	_, err = file.Write(sc.Data)
 	if err != nil {
 		log.Info("compile err write: ", err)
 		return "", err
 	}
 	file.Close()
-	cmd := exec.Command("go", "build", "-o", "D:/"+sc.SCNAME+ ".exe", "D:/"+ sc.SCNAME+ ".go")
+	cmd := exec.Command("go", "build", "-o", "D:/"+sc.SCNAME+".exe", "D:/"+sc.SCNAME+".go")
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
@@ -136,8 +134,8 @@ func compile(sc *SmartContractInit)(string, error){
 		log.Error(err.Error(), stderr.String())
 		return "", errors.New(stderr.String())
 	}
-	fp,err := ioutil.ReadFile("D:/"+ sc.SCNAME+ ".exe")
-	if err != nil{
+	fp, err := ioutil.ReadFile("D:/" + sc.SCNAME + ".exe")
+	if err != nil {
 		log.Info("compile err openfile: ", err)
 	}
 	h := sha256.New()
@@ -147,7 +145,7 @@ func compile(sc *SmartContractInit)(string, error){
 
 }
 
-func execute(){
+func execute() {
 
 }
 

@@ -3,48 +3,46 @@ package common
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/cloudflare/cfssl/log"
 	"strconv"
 	"sync"
 	"time"
-	"github.com/cloudflare/cfssl/log"
 )
 
 type Block struct {
-	Index     int `db:bIndex`
+	Index     int    `db:bIndex`
 	Timestamp string `db:Timestamp`
 	PrevHash  string `db:Prevhash`
-	Merkle	  string `db:Merkle`
+	Merkle    string `db:Merkle`
 	Signature string `db:Signature`
 	Hash      string `db:Hash`
-	TX 		  []Transaction
+	TX        []Transaction
 }
 
-type BlockHeader struct{
-	Index     int `db:bIndex`
+type BlockHeader struct {
+	Index     int    `db:bIndex`
 	Timestamp string `db:Timestamp`
-	BPM       int `db:BPM`
+	BPM       int    `db:BPM`
 	Hash      string `db:Hash`
 	PrevHash  string `db:Prevhash`
-	Merkle	  string
+	Merkle    string
 }
 
-type Transaction struct{
-	From string
-	To string
+type Transaction struct {
+	From      string
+	To        string
 	Timestamp string
 	Signature string
-	Message string
+	Message   string
 }
 
-var Blockchains = make(chan Block , 100000)
+var Blockchains = make(chan Block, 100000)
 
 var B Block
 
 var Tx100 []Transaction
 
 var mutex = &sync.Mutex{}
-
-
 
 // make sure block is valid by checking index, and comparing the hash of the previous block
 func isBlockValid(newBlock, oldBlock Block) bool {
@@ -85,55 +83,54 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 	return newBlock
 }
 
-func Init(){
+func Init() {
 	Tx100 = generateTx()
-	genesisBlock  := Block{0,"","","","","",nil}
-	genesisBlock .Hash = calculateHash(genesisBlock)
+	genesisBlock := Block{0, "", "", "", "", "", nil}
+	genesisBlock.Hash = calculateHash(genesisBlock)
 	genesisBlock.Merkle = genesisBlock.GenerateMerkelRoot()
-	log.Info("GenesisBlock: ",genesisBlock)
+	log.Info("GenesisBlock: ", genesisBlock)
 	Blockchains <- genesisBlock
 	B = genesisBlock
 	log.Info("Block Init Successfully.")
 
-
 }
 
-func generateTx()[]Transaction{
+func generateTx() []Transaction {
 	res := []Transaction{}
-	for i := 0; i < 100; i++{
+	for i := 0; i < 100; i++ {
 		curTime := time.Now()
 		tmp := Transaction{
-			From:strconv.Itoa(curTime.Second()),
-			To:"To",
-			Timestamp:curTime.String(),
-			Signature:"Signature",
-			Message:"Message",
+			From:      strconv.Itoa(curTime.Second()),
+			To:        "To",
+			Timestamp: curTime.String(),
+			Signature: "Signature",
+			Message:   "Message",
 		}
 		res = append(res, tmp)
 	}
 	return res
 }
 
-func (b *Block) GenerateMerkelRoot() string{
+func (b *Block) GenerateMerkelRoot() string {
 	mt := NewMerkleTree(transToByte(b.TX))
 	return hex.EncodeToString(mt.RootNode.Data)
 }
 
-func transToByte(trans []Transaction)[][]byte{
+func transToByte(trans []Transaction) [][]byte {
 	res := [][]byte{}
-	for _,data := range trans{
+	for _, data := range trans {
 		res = append(res, transTobyte(data))
 	}
 	return res
 }
-func transTobyte(tran Transaction)[]byte{
+func transTobyte(tran Transaction) []byte {
 	tranString := tran.From + tran.To + tran.Timestamp + tran.Signature + tran.Message
 	return []byte(tranString)
 }
 
-func TransToByte(trans []Transaction)[][]byte{
+func TransToByte(trans []Transaction) [][]byte {
 	res := [][]byte{}
-	for _,data := range trans{
+	for _, data := range trans {
 		res = append(res, transTobyte(data))
 	}
 	return res

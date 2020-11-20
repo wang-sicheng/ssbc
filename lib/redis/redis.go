@@ -1,10 +1,11 @@
 package redis
 
 import (
-	"github.com/gomodule/redigo/redis"
 	"github.com/cloudflare/cfssl/log"
+	"github.com/gomodule/redigo/redis"
 	"time"
 )
+
 //keys that already used
 //purpose, keys, type
 //transaction pool， transPool， List
@@ -60,12 +61,8 @@ func (conn *RedisConn) SetExpire(key string, time int) error {
 	return nil
 }
 
-
-
-
 var Pool redis.Pool
 var Redisconn redis.Conn
-
 
 func init() {
 	Pool = redis.Pool{
@@ -84,23 +81,20 @@ func init() {
 	}
 	conn, err := redisConn("tcp", "127.0.0.1:6379")
 	if err != nil {
-		log.Info("redis fail init fail:",err.Error())
+		log.Info("redis fail init fail:", err.Error())
 		//panic(err.Error())
 
 	}
 	Redisconn = conn
 }
 
-
-
-
 func SADD(keyValue ...string) error {
-		_, err := Redisconn.Do("SADD", keyValue[0], keyValue[1])
-		if err != nil {
-			log.Info(err.Error())
-			return err
-		}
-		return nil
+	_, err := Redisconn.Do("SADD", keyValue[0], keyValue[1])
+	if err != nil {
+		log.Info(err.Error())
+		return err
+	}
+	return nil
 }
 
 func SCARD(key string) (int, error) {
@@ -109,14 +103,14 @@ func SCARD(key string) (int, error) {
 		log.Info(err.Error())
 		return 0, err
 	}
-	return res,nil
+	return res, nil
 }
 
-func ToInt(value interface{}, err error)(int, error){
-	res, err := redis.Int(value,nil)
-	if err != nil{
+func ToInt(value interface{}, err error) (int, error) {
+	res, err := redis.Int(value, nil)
+	if err != nil {
 		log.Info("to int err:", err)
 		return 0, err
 	}
-	return res,nil
+	return res, nil
 }

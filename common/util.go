@@ -1,7 +1,7 @@
 package common
 
-func leaderMode(){}
+func leaderMode() {}
 
-func  merkle_hash(){}
+func merkle_hash() {}
 
-func hash(){}
+func hash() {}

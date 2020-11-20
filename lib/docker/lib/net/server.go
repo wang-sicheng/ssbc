@@ -31,12 +31,9 @@ type Server struct {
 	// An error which occurs when serving
 	serveError error
 
-
-
 	wait chan bool
 	// Server mutex
 	mutex sync.Mutex
-
 }
 
 func (s *Server) Init(renew bool) (err error) {
@@ -52,14 +49,12 @@ func (s *Server) init(renew bool) (err error) {
 	serverVersion := "SSBC v1.0"
 	log.Infof("Server Version: %s", serverVersion)
 
-
 	// Initialize the config
 	err = s.initConfig()
 	if err != nil {
 		return err
 	}
 	// Initialize the default CA last
-
 
 	// Successful initialization
 	return nil
@@ -119,8 +114,6 @@ func (s *Server) Start() (err error) {
 	// Register http handlers
 	s.registerHandlers()
 
-
-
 	// Start listening and serving
 	err = s.listenAndServe()
 	if err != nil {
@@ -136,7 +129,6 @@ func (s *Server) Start() (err error) {
 func (s *Server) listenAndServe() (err error) {
 
 	var listener net.Listener
-
 
 	c := s.Config
 
@@ -157,8 +149,6 @@ func (s *Server) listenAndServe() (err error) {
 
 	s.listener = listener
 	log.Infof("Listening on %s", addrStr)
-
-
 
 	// Start serving requests, either blocking or non-blocking
 	if s.BlockingStart {
@@ -215,7 +205,6 @@ func (s *Server) registerHandlers() {
 	s.registerHandler("testinfo", newTestInfoEndpoint(s))
 
 	s.registerHandler("recBlock", receiveBlock(s))
-
 
 }
 func (s *Server) registerHandler(path string, se *serverEndpoint) {

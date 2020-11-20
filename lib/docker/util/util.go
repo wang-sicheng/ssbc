@@ -92,4 +92,3 @@ func Unmarshal(from []byte, to interface{}, what string) error {
 	}
 	return nil
 }
-

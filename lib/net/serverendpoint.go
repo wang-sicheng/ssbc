@@ -19,7 +19,6 @@ type serverEndpoint struct {
 	Server *Server
 }
 
-
 func (se *serverEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp interface{}
 	url := r.URL.String()

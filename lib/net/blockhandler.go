@@ -1,17 +1,17 @@
 package net
 
 import (
-	"github.com/ssbc/lib/redis"
-	"github.com/ssbc/common"
+	"crypto/sha256"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/cloudflare/cfssl/log"
 	rd "github.com/gomodule/redigo/redis"
-	"encoding/json"
-	"fmt"
-	"crypto/sha256"
-	"errors"
+	"github.com/ssbc/common"
+	"github.com/ssbc/lib/redis"
 
-	"hash"
 	"bytes"
+	"hash"
 
 	"strconv"
 )
@@ -35,11 +35,11 @@ func (t TestContent) Equals(other Content) (bool, error) {
 	return t.x == other.(TestContent).x, nil
 }
 
-type test struct{
+type test struct {
 	Name []string
 }
 
-func main(){
+func main() {
 	//merkle tree tests
 	//m:= []string{"e5","d4","c3","b2","a1"}
 	//mm:=[][]byte{}
@@ -55,8 +55,8 @@ func main(){
 	//list = append(list, TestContent{x: "c3"})
 	//list = append(list, TestContent{x: "b2"})
 	//list = append(list, TestContent{x: "a1"})
-    //a,_:= list[0].CalculateHash()
-    //fmt.Println(a)
+	//a,_:= list[0].CalculateHash()
+	//fmt.Println(a)
 	//hash := sha256.Sum256([]byte("e5"))
 	//fmt.Println(hash)
 	////Create a new Merkle Tree from the list of Content
@@ -109,34 +109,32 @@ func main(){
 	//pullTrans()
 
 }
-func marshalTrans(trans chan []byte){
+func marshalTrans(trans chan []byte) {
 
-		tx := generateTx()
-		for _,data := range tx{
-			if verifyTrans(data){
-				transbyte,jserr := json.Marshal(data)
-				if jserr != nil{
-					log.Info(jserr)
-					return
-				}
-
-				trans <- transbyte
-
-
+	tx := generateTx()
+	for _, data := range tx {
+		if verifyTrans(data) {
+			transbyte, jserr := json.Marshal(data)
+			if jserr != nil {
+				log.Info(jserr)
+				return
 			}
-		}
 
+			trans <- transbyte
+
+		}
+	}
 
 }
 
-func recTrans(){
+func recTrans() {
 	//接受交易，验证 存入redis
 	trans := generateTx()
 	transjson := []interface{}{"transPool"}
-	for _,data := range trans{
-		if verifyTrans(data){
-			transbyte,jserr := json.Marshal(data)
-			if jserr != nil{
+	for _, data := range trans {
+		if verifyTrans(data) {
+			transbyte, jserr := json.Marshal(data)
+			if jserr != nil {
 
 				return
 			}
@@ -146,36 +144,36 @@ func recTrans(){
 	}
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	_,err := conn.Do("RPUSH", transjson...)
-	if err != nil{
+	_, err := conn.Do("RPUSH", transjson...)
+	if err != nil {
 		log.Info("recTrans err: ", err)
 	}
 
 }
 
-func transToRedis(trans chan []byte){
+func transToRedis(trans chan []byte) {
 	conn := redis.Pool.Get()
 	defer conn.Close()
 	i := 1
-	for t := range trans{
+	for t := range trans {
 		i++
-		_,err := conn.Do("RPUSH","transPool",t)
-		if err != nil{
+		_, err := conn.Do("RPUSH", "transPool", t)
+		if err != nil {
 			log.Info("recTrans err: ", err)
 			return
 		}
 		log.Info("transToRedis", string(t))
-		if i>10000{
+		if i > 10000 {
 			return
 		}
 	}
 }
 
-func verifyTrans(tran common.Transaction)bool{
+func verifyTrans(tran common.Transaction) bool {
 	return true
 }
 
-func pullTrans()[][]byte{
+func pullTrans() [][]byte {
 	conn := redis.Pool.Get()
 	defer conn.Close()
 
@@ -194,16 +192,16 @@ func pullTrans()[][]byte{
 	comTransSet := [][]byte{}
 	//time.Sleep(time.Second*5)
 
-	for{
-		transs,err := rd.ByteSlices(conn.Do("BLPOP","transPool","1"))
-		if err!=nil{
+	for {
+		transs, err := rd.ByteSlices(conn.Do("BLPOP", "transPool", "1"))
+		if err != nil {
 			log.Info("BLPOP err: ", err)
 		}
-		if transs !=nil{
+		if transs != nil {
 			comTransSet = append(comTransSet, transs[1])
 		}
-		if transs == nil || len(comTransSet) >= transinblock{
-					break
+		if transs == nil || len(comTransSet) >= transinblock {
+			break
 		}
 	}
 	return comTransSet
@@ -238,24 +236,21 @@ func pullTrans()[][]byte{
 
 }
 
-func generateTx()[]common.Transaction{
+func generateTx() []common.Transaction {
 	res := []common.Transaction{}
-	for i := 0; i <= transtoredis; i++{
+	for i := 0; i <= transtoredis; i++ {
 		//cur := time.Now()
 		tmp := common.Transaction{
-			From:strconv.Itoa(i),//int(cur.Unix())+
-			To:"To",
+			From:      strconv.Itoa(i), //int(cur.Unix())+
+			To:        "To",
 			Timestamp: strconv.Itoa(i), //cur.String(),
-			Signature:"Signature",
-			Message:"Message",
+			Signature: "Signature",
+			Message:   "Message",
 		}
 		res = append(res, tmp)
 	}
 	return res
 }
-
-
-
 
 type Content interface {
 	CalculateHash() ([]byte, error)

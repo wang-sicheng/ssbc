@@ -6,28 +6,28 @@ import (
 	"time"
 )
 
-type Sig struct{
-	Keys []byte
+type Sig struct {
+	Keys   []byte
 	Sender string
 }
 
-func syncPublickey(s *Server)*serverEndpoint{
+func syncPublickey(s *Server) *serverEndpoint {
 	return &serverEndpoint{
-		Methods: []string{ "POST"},
+		Methods: []string{"POST"},
 		Handler: syncPublickeyHandler,
 		Server:  s,
 	}
 }
 
 func syncPublickeyHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-	b,err := ctx.ReadBodyBytes()
-	if err != nil{
+	b, err := ctx.ReadBodyBytes()
+	if err != nil {
 		log.Info("syncPlulickey Readbody err: ", err)
 		return nil, err
 	}
 	sig := Sig{}
 	err = json.Unmarshal(b, &sig)
-	if err != nil{
+	if err != nil {
 		log.Info("syncPlulickey json err: ", err)
 		return nil, err
 	}
@@ -38,10 +38,9 @@ func syncPublickeyHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 }
 
-func SendPublicKey(){
+func SendPublicKey() {
 
-
-	for len(signatures) < Nodes{
+	for len(signatures) < Nodes {
 		log.Info("Waiting for other nodes signature")
 		time.Sleep(time.Second)
 	}

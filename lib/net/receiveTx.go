@@ -1,41 +1,41 @@
 package net
 
 import (
+	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
-	"encoding/json"
 	"github.com/ssbc/lib/redis"
 )
 
-func receiveTx(s *Server)*serverEndpoint{
+func receiveTx(s *Server) *serverEndpoint {
 	return &serverEndpoint{
-		Methods: []string{ "POST"},
+		Methods: []string{"POST"},
 		Handler: receiveTxHandler,
 		Server:  s,
 	}
 }
 
 func receiveTxHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-	b,err := ctx.ReadBodyBytes()
-	if err !=nil{
+	b, err := ctx.ReadBodyBytes()
+	if err != nil {
 		log.Info("ERR receiveTxHandler: ", err)
 	}
-	log.Info("receiveBlockHandler rec: ",string(b))
+	log.Info("receiveBlockHandler rec: ", string(b))
 	newTx := &common.Transaction{}
 	err = json.Unmarshal(b, newTx)
-	if err !=nil{
+	if err != nil {
 		log.Info("ERR receiveBlockHandler newTx json: ", err)
 	}
 	log.Info("receiveBlockHandler newTx: ", *newTx)
-	if verifyTx(newTx){
+	if verifyTx(newTx) {
 		go CacheTx(b)
 	}
 
 	return nil, nil
 }
 
-func verifyTx(tx *common.Transaction)bool{
-	if tx.Signature == "Signature"{
+func verifyTx(tx *common.Transaction) bool {
+	if tx.Signature == "Signature" {
 		return true
 	}
 	return false
@@ -78,13 +78,12 @@ func verifyTx(tx *common.Transaction)bool{
 //	}
 //}
 
+func CacheTx(b []byte) {
 
-func CacheTx(b []byte){
-
-		conn := redis.Pool.Get()
-		defer conn.Close()
-		_,err := conn.Do("RPUSH", "transPool", b)
-		if err != nil{
-			log.Info("ERR receiveTxHandler RPUSH: ", err)
-		}
+	conn := redis.Pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("RPUSH", "transPool", b)
+	if err != nil {
+		log.Info("ERR receiveTxHandler RPUSH: ", err)
 	}
+}

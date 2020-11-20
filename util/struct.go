@@ -1,4 +1,3 @@
-
 /*
 Copyright IBM Corp. 2017 All Rights Reserved.
 
@@ -18,12 +17,12 @@ limitations under the License.
 package util
 
 import (
-"fmt"
-"reflect"
-"strings"
-"time"
+	"fmt"
+	"reflect"
+	"strings"
+	"time"
 
-"github.com/pkg/errors"
+	"github.com/pkg/errors"
 )
 
 // Field is a field of an arbitrary struct
@@ -215,4 +214,3 @@ func getHideTag(f *Field, tags map[string]string) {
 	}
 	f.Hide = val
 }
-

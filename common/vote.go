@@ -1,35 +1,15 @@
 package common
 
+func vote() {}
 
-
-func vote(){}
-
-
-func sendTransList(){
-
-
-
-
+func sendTransList() {
 
 }
 
+func sendBlock() {}
 
+func sendBlockRound2() {}
 
-func sendBlock(){}
+func voteForBlockRound1() {}
 
-
-
-
-func sendBlockRound2(){}
-
-
-
-func voteForBlockRound1(){}
-
-
-
-func voteForBlockRound2(){}
-
-
-
-
+func voteForBlockRound2() {}

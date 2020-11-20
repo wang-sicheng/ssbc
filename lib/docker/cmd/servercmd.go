@@ -90,7 +90,7 @@ func (s *ServerCmd) init() {
 		net.Init()
 		net.Flushall()
 		net.Ports = strconv.Itoa(s.getServer().Config.Port)
-		log.Info("Ports :",net.Ports)
+		log.Info("Ports :", net.Ports)
 		err := s.getServer().Start()
 		if err != nil {
 			return err

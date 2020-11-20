@@ -1,5 +1,5 @@
 package common
 
-func transVerification(){}
+func transVerification() {}
 
-func blockVerify(){}
+func blockVerify() {}

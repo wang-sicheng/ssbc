@@ -167,7 +167,6 @@ func createHTTPErr(scode, code int, format string, args ...interface{}) *httpErr
 	}
 }
 
-
 func newHTTPErr(scode, code int, format string, args ...interface{}) error {
 	return errors.Wrap(createHTTPErr(scode, code, format, args...), "")
 }

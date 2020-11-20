@@ -2,6 +2,8 @@ package main
 
 import (
 	"C"
+	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -9,8 +11,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"fmt"
-	"flag"
 )
 
 type app_state struct {
@@ -90,8 +90,9 @@ func main() {
 
 	InfoLogger.Println("DDoS Detector finished.")
 }
+
 //export Detector
-func Detector(){
+func Detector() {
 	var (
 		configFile  string
 		withDebug   bool
@@ -118,7 +119,8 @@ func Detector(){
 
 	InfoLogger.Println("DDoS Detector finished.")
 }
+
 //export Test
-func Test(){
+func Test() {
 	fmt.Println("hello")
 }

@@ -18,7 +18,6 @@ const (
 	cmdName      = "SSBC-server"
 	envVarPrefix = "SSBC_SERVER"
 	homeEnvVar   = "SSBC_SERVER_HOME"
-
 )
 
 const (
@@ -159,8 +158,6 @@ func (s *ServerCmd) configInit() (err error) {
 		return err
 	}
 
-
-
 	return nil
 }
 
@@ -199,7 +196,6 @@ func (s *ServerCmd) createDefaultConfigFile() error {
 	cfg = strings.Replace(cfg, "<<<ADMIN>>>", user, 1)
 	cfg = strings.Replace(cfg, "<<<ADMINPW>>>", pass, 1)
 	cfg = strings.Replace(cfg, "<<<MYHOST>>>", myhost, 1)
-
 
 	// Now write the file
 	cfgDir := filepath.Dir(s.cfgFileName)

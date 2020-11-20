@@ -11,7 +11,6 @@ require (
 	github.com/gomodule/redigo v1.8.2
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl v1.0.1-0.20190611123218-cf7d376da96d // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/errors v0.9.1

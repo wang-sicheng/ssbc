@@ -2,20 +2,20 @@ package net
 
 import (
 	"crypto/x509"
-	"net/http"
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 )
 
 type serverRequestContextImpl struct {
-	req            *http.Request
-	resp           http.ResponseWriter
-	endpoint       *serverEndpoint
+	req      *http.Request
+	resp     http.ResponseWriter
+	endpoint *serverEndpoint
 
 	enrollmentID   string
 	enrollmentCert *x509.Certificate
 
-	body           struct {
+	body struct {
 		read bool   // true after body is read
 		buf  []byte // the body itself
 		err  error  // any error from reading the body
@@ -72,5 +72,3 @@ func (ctx *serverRequestContextImpl) ReadBodyBytes() ([]byte, error) {
 	}
 	return ctx.body.buf, nil
 }
-
-

@@ -86,11 +86,11 @@ func (s *ServerCmd) init() {
 		//	return err
 		//}
 		log.Info("Mysql Connection Open Successfully")
-		common.Init()	// 创建创世区块
-		net.Init()		// 设置 net 的 currentBlock 为创世区块，新建 signatures 和 senders 两个空 map
-		net.Flushall()  // 调用 redis 的 flushall 刷新缓存
-		net.Ports = strconv.Itoa(s.getServer().Config.Port) 	// 设置监听端口
-		log.Info("Ports :",net.Ports)
+		common.Init()                                       // 创建创世区块
+		net.Init()                                          // 设置 net 的 currentBlock 为创世区块，新建 signatures 和 senders 两个空 map
+		net.Flushall()                                      // 调用 redis 的 flushall 刷新缓存
+		net.Ports = strconv.Itoa(s.getServer().Config.Port) // 设置监听端口
+		log.Info("Ports :", net.Ports)
 		err := s.getServer().Start()
 		if err != nil {
 			return err

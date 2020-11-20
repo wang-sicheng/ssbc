@@ -16,36 +16,35 @@ limitations under the License.
 package main
 
 import (
-  "os"
+	"os"
 )
 
 var (
-  blockingStart = true
+	blockingStart = true
 )
 
 func main() {
-  if err := RunMain(os.Args); err != nil {
-    os.Exit(1)
-  }
-
+	if err := RunMain(os.Args); err != nil {
+		os.Exit(1)
+	}
 
 }
 func RunMain(args []string) error {
-  // Save the os.Args
-  saveOsArgs := os.Args
-  os.Args = args
+	// Save the os.Args
+	saveOsArgs := os.Args
+	os.Args = args
 
-  cmdName := ""
-  if len(args) > 1 {
-    cmdName = args[1]
-  }
-  scmd := NewCommand(cmdName, blockingStart)
+	cmdName := ""
+	if len(args) > 1 {
+		cmdName = args[1]
+	}
+	scmd := NewCommand(cmdName, blockingStart)
 
-  // Execute the command
-  err := scmd.Execute()
+	// Execute the command
+	err := scmd.Execute()
 
-  // Restore original os.Args
-  os.Args = saveOsArgs
+	// Restore original os.Args
+	os.Args = saveOsArgs
 
-  return err
+	return err
 }

@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-
-func TestM(t *testing.T)  {
+func TestM(t *testing.T) {
 	fmt.Println("master")
 }

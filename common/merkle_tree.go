@@ -18,13 +18,11 @@ type MerkleNode struct {
 
 // NewMerkleTree creates a new Merkle tree from a sequence of data
 func NewMerkleTree(data [][]byte) *MerkleTree {
-	if len(data) == 0{
-		return &MerkleTree{NewMerkleNode(nil,nil,nil)}
+	if len(data) == 0 {
+		return &MerkleTree{NewMerkleNode(nil, nil, nil)}
 	}
 
 	var nodes []MerkleNode
-
-
 
 	for _, datum := range data {
 		node := NewMerkleNode(nil, nil, datum)
@@ -36,9 +34,9 @@ func NewMerkleTree(data [][]byte) *MerkleTree {
 		var node MerkleNode
 		for j := 0; j < len(nodes); j += 2 {
 
-			if j+1 == len(nodes){
+			if j+1 == len(nodes) {
 				node = *NewMerkleNode(&nodes[j], &nodes[j], nil)
-			}else{
+			} else {
 				node = *NewMerkleNode(&nodes[j], &nodes[j+1], nil)
 			}
 			//node := NewMerkleNode(&nodes[j], &nodes[j+1], nil)

@@ -10,7 +10,7 @@ type app_config struct {
 }
 
 func ReadConfig(configFile string) (app_config, error) {
-	var AppConfig app_config=app_config{sflow_config{"::",6343}}
+	var AppConfig app_config = app_config{sflow_config{"::", 6343}}
 	//if _, err := toml.DecodeFile(configFile, &AppConfig); err != nil {
 	//	//	ErrorLogger.Println("Unable to read config file!")
 	//	//	ErrorLogger.Println(err)
