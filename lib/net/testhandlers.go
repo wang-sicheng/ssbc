@@ -37,6 +37,7 @@ type TestInfoResponseNet struct {
 	Version string
 }
 
+// 区块链测试接口
 func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 	log.Info("ctx.req.RemoteAddr: ", ctx.req.RemoteAddr)
@@ -75,6 +76,7 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	return resp, nil
 }
 
+// 广播TransHash
 func SendTrans() {
 
 	if flag {

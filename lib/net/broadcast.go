@@ -41,6 +41,7 @@ func init() {
 	}
 }
 
+
 func Broadcast(s string, reqBody []byte) error {
 
 	for _, client := range clients {

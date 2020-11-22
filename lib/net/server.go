@@ -202,8 +202,8 @@ func (s *Server) closeListener() error {
 }
 func (s *Server) registerHandlers() {
 	s.mux = gmux.NewRouter()
-	s.registerHandler("testinfo", newTestInfoEndpoint(s))
-	s.registerHandler("recTransHash", receive_trans_bitarry(s))
+	s.registerHandler("testinfo", newTestInfoEndpoint(s))  // 接受交易存入redis
+	s.registerHandler("recTransHash", receive_trans_bitarry(s))  // 确定公共交易集，建块
 	s.registerHandler("recBlock", receiveBlock(s))
 	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s))
 	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s))

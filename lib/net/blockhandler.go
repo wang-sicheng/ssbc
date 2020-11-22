@@ -169,10 +169,12 @@ func transToRedis(trans chan []byte) {
 	}
 }
 
+//TODO:交易验证
 func verifyTrans(tran common.Transaction) bool {
 	return true
 }
 
+// 从redis中拉取交易
 func pullTrans() [][]byte {
 	conn := redis.Pool.Get()
 	defer conn.Close()
@@ -236,6 +238,7 @@ func pullTrans() [][]byte {
 
 }
 
+// 生成一系列交易
 func generateTx() []common.Transaction {
 	res := []common.Transaction{}
 	for i := 0; i <= transtoredis; i++ {

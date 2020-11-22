@@ -88,7 +88,7 @@ func findCommonTrans(trans TransHash, sender string) {
 		senderInterface = append(senderInterface, s)
 	}
 	log.Info("senderInterface: ", senderInterface)
-	commonTrans, err := rd.Strings(conn.Do("SINTER", senderInterface...))
+	commonTrans, err := rd.Strings(conn.Do("SINTER", senderInterface...)) // SINTER返回指定集合的交集
 	if err != nil {
 		log.Info("findCommonTrans err SINTER: ", err)
 	}
@@ -99,7 +99,7 @@ func findCommonTrans(trans TransHash, sender string) {
 func generateFromCommonTx(commonTrans []string, currentBlock common.Block) {
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))
+	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))  // 缓存？？
 	if err != nil {
 		log.Info("generateFromCommonTx err GET: ", err)
 	}
@@ -121,7 +121,7 @@ func generateFromCommonTx(commonTrans []string, currentBlock common.Block) {
 		}
 	}
 	b := common.Block{TX: trans}
-	b = common.GenerateBlock(currentBlock, b)
+	b = common.GenerateBlock(currentBlock, b)  // 建块
 	bb, err := json.Marshal(b)
 	if err != nil {
 		log.Info("generateFromCommonTx err json block: ", err)
