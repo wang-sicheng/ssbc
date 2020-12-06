@@ -10,30 +10,27 @@ import (
 )
 
 type Block struct {
-	Index     int    `db:bIndex`
-	Timestamp string `db:Timestamp`
-	PrevHash  string `db:Prevhash`
-	Merkle    string `db:Merkle`
-	Signature string `db:Signature`
-	Hash      string `db:Hash`
-	TX        []Transaction
-}
-
-type BlockHeader struct {
-	Index     int    `db:bIndex`
-	Timestamp string `db:Timestamp`
-	BPM       int    `db:BPM`
-	Hash      string `db:Hash`
-	PrevHash  string `db:Prevhash`
-	Merkle    string
+	Id         int    `json:"id"`
+	Pid        int    `json:"pid"`
+	PrevHash   string `json:"prev_hash"`
+	Hash       string `json:"hash"`
+	MerkleRoot string `json:"merkle_root"`
+	TxCount    int    `json:"tx_count"`
+	Signature  string `json:"signature"`
+	Timestamp  string `json:"timestamp"`
+	TX         []Transaction
 }
 
 type Transaction struct {
-	From      string
-	To        string
-	Timestamp string
-	Signature string
-	Message   string
+	Id              int    `json:"id"`
+	BlockId         int    `json:"block_id"`
+	SenderAddress   string `json:"sender_address"`
+	ReceiverAddress string `json:"receiver_address"`
+	Timestamp       string `json:"timestamp"`
+	Signature       string `json:"signature"`
+	Message         string `json:"message"`
+	SenderPublicKey string `json:"sender_public_key"`
+	TransferAmount  int    `json:"transfer_amount"`
 }
 
 var Blockchains = make(chan Block, 100000)
@@ -46,7 +43,7 @@ var mutex = &sync.Mutex{}
 
 // make sure block is valid by checking index, and comparing the hash of the previous block
 func isBlockValid(newBlock, oldBlock Block) bool {
-	if oldBlock.Index+1 != newBlock.Index {
+	if oldBlock.Id+1 != newBlock.Id {
 		return false
 	}
 
@@ -61,12 +58,13 @@ func isBlockValid(newBlock, oldBlock Block) bool {
 	return true
 }
 
-// SHA256 hasing
+//定义hash算法 SHA256 hasing
 func calculateHash(block Block) string {
-	record := strconv.Itoa(block.Index) + block.Timestamp + block.PrevHash + block.Merkle + block.Signature
-	h := sha256.New()
-	h.Write([]byte(record))
-	hashed := h.Sum(nil)
+	//strconv.Itoa 将整数转换为十进制字符串形式（即：FormatInt(i, 10) 的简写）
+	record := strconv.Itoa(block.Id) + block.Timestamp + block.PrevHash + block.MerkleRoot + block.Signature
+	h := sha256.New()       //创建一个Hash对象
+	h.Write([]byte(record)) //h.Write写入需要哈希的内容
+	hashed := h.Sum(nil)    //h.Sum添加额外的[]byte到当前的哈希中，一般不是经常需要这个操作
 	return hex.EncodeToString(hashed)
 }
 
@@ -74,10 +72,10 @@ func calculateHash(block Block) string {
 func GenerateBlock(oldBlock Block, newBlock Block) Block {
 
 	t := time.Now()
-	newBlock.Index = oldBlock.Index + 1
+	newBlock.Id = oldBlock.Id + 1
 	newBlock.Timestamp = t.String()
 	newBlock.PrevHash = oldBlock.Hash
-	newBlock.Merkle = newBlock.GenerateMerkelRoot()
+	newBlock.MerkleRoot = newBlock.GenerateMerkelRoot()
 	newBlock.Signature = "Signature"
 	newBlock.Hash = calculateHash(newBlock)
 	return newBlock
@@ -85,9 +83,9 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 
 func Init() {
 	Tx100 = generateTx()
-	genesisBlock := Block{0, "", "", "", "", "", nil}
+	genesisBlock := Block{1, 0, "", "", "", 44, "", "", nil}
 	genesisBlock.Hash = calculateHash(genesisBlock)
-	genesisBlock.Merkle = genesisBlock.GenerateMerkelRoot()
+	genesisBlock.MerkleRoot = genesisBlock.GenerateMerkelRoot()
 	log.Info("GenesisBlock: ", genesisBlock)
 	Blockchains <- genesisBlock
 	B = genesisBlock
@@ -100,11 +98,11 @@ func generateTx() []Transaction {
 	for i := 0; i < 100; i++ {
 		curTime := time.Now()
 		tmp := Transaction{
-			From:      strconv.Itoa(curTime.Second()),
-			To:        "To",
-			Timestamp: curTime.String(),
-			Signature: "Signature",
-			Message:   "Message",
+			SenderAddress:   strconv.Itoa(curTime.Second()),
+			ReceiverAddress: "To",
+			Timestamp:       curTime.String(),
+			Signature:       "Signature",
+			Message:         "Message",
 		}
 		res = append(res, tmp)
 	}
@@ -124,7 +122,7 @@ func transToByte(trans []Transaction) [][]byte {
 	return res
 }
 func transTobyte(tran Transaction) []byte {
-	tranString := tran.From + tran.To + tran.Timestamp + tran.Signature + tran.Message
+	tranString := tran.SenderAddress + tran.ReceiverAddress + tran.Timestamp + tran.Signature + tran.Message
 	return []byte(tranString)
 }
 

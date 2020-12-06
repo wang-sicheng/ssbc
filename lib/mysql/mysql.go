@@ -17,17 +17,18 @@ type User struct {
 
 const (
 	USERNAME = "root"
-	PASSWORD = "passwd"
+	PASSWORD = "123456"
 	NETWORK  = "tcp"
-	SERVER   = "192.168.31.135"
+	SERVER   = "127.0.0.1"
 	PORT     = 3306
-	DATABASE = "SSBC"
+	DATABASE = "ssbc"
 )
 
 var DB *sql.DB
 
-func init() {
+func InitDB() (DB *sql.DB) {
 	dsn := fmt.Sprintf("%s:%s@%s(%s:%d)/%s", USERNAME, PASSWORD, NETWORK, SERVER, PORT, DATABASE)
+	// 不会校验账号密码是否正确
 	tmp, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Infof("Open mysql failed,err:%v\n", err)
@@ -35,8 +36,31 @@ func init() {
 	}
 
 	DB = tmp
-
+	return DB
 }
+
+func QueryAllBlocks(DB *sql.DB) {
+	block := new(common.Block)
+	rows, err := DB.Query("select * from block")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		fmt.Printf("Query failed,err:%v", err)
+		return
+	}
+	for rows.Next() {
+		err = rows.Scan(&block.Id, &block.Pid, &block.PrevHash, &block.Hash, &block.MerkleRoot, &block.TxCount, &block.Signature, &block.Timestamp)
+		if err != nil {
+			fmt.Printf("Scan failed,err:%v", err)
+			return
+		}
+		fmt.Print(*block)
+	}
+}
+
 func queryOne(DB *sql.DB) {
 	user := new(User)
 	row := DB.QueryRow("select * from block where id=?", 1)
@@ -76,7 +100,7 @@ func InsertBlock(block common.Block) {
 
 //插入数据
 func insertData(DB *sql.DB, block common.Block) {
-	result, err := DB.Exec("insert INTO block(bIndex,Timestamp,BPM,Hash,PreHash) values(?,?,?,?,?)", block.Index, block.Timestamp, block.Signature, block.Hash, block.PrevHash)
+	result, err := DB.Exec("insert INTO block(bIndex,Timestamp,BPM,Hash,PreHash) values(?,?,?,?,?)", block.Id, block.Timestamp, block.Signature, block.Hash, block.PrevHash)
 	if err != nil {
 		fmt.Printf("Insert failed,err:%v", err)
 		return

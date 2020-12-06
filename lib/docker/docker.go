@@ -72,7 +72,7 @@ type SmartContractDefinition struct {
 }
 
 func IsSmartContract(tx *common.Transaction) bool {
-	if tx.To == "0" {
+	if tx.ReceiverAddress == "0" {
 		return true
 	}
 	return false

@@ -63,21 +63,21 @@ func smartContractExcu(b *common.Block) {
 }
 
 func IsSmartContract(tx *common.Transaction) bool {
-	if tx.To == "0" || tx.To == "lcssc" {
+	if tx.ReceiverAddress == "0" || tx.ReceiverAddress == "lcssc" {
 		return true
 	}
-	if _, ok := scStatus[tx.To]; ok {
+	if _, ok := scStatus[tx.ReceiverAddress]; ok {
 		return true
 	}
-	return scHash[tx.To]
+	return scHash[tx.ReceiverAddress]
 }
 
 func txToSmartContract(tx *common.Transaction) {
-	if tx.To == "lcssc" || tx.To == "0" {
+	if tx.ReceiverAddress == "lcssc" || tx.ReceiverAddress == "0" {
 		go lcssc(tx)
 	} else {
 		client := &Client{
-			Url: scIP[tx.To],
+			Url: scIP[tx.ReceiverAddress],
 		}
 		client.httpClient = &http.Client{
 
@@ -88,7 +88,7 @@ func txToSmartContract(tx *common.Transaction) {
 				DisableKeepAlives:   false,
 			},
 		}
-		endPoint := scIP[tx.To] + "/init"
+		endPoint := scIP[tx.ReceiverAddress] + "/init"
 
 		req, err := NewPost(endPoint, []byte(tx.Message))
 		if err != nil {
@@ -100,7 +100,7 @@ func txToSmartContract(tx *common.Transaction) {
 		if err != nil {
 			return
 		}
-		newtx := common.Transaction{"lcssc", tx.From, time.Now().String(), "signature", "result"}
+		newtx := common.Transaction{0, 1, "lcssc", tx.SenderAddress, time.Now().String(), "signature", "result", "PublicKey", 100}
 		sendTx(newtx)
 	}
 }
@@ -112,7 +112,7 @@ func lcssc(tx *common.Transaction) {
 		log.Info("lcc err json :", err)
 		return
 	}
-	if tx.From == "lcssc" || tx.From == "0" {
+	if tx.SenderAddress == "lcssc" || tx.SenderAddress == "0" {
 		if lcc.Command == "install" {
 			installSC(lcc)
 		}
@@ -122,13 +122,13 @@ func lcssc(tx *common.Transaction) {
 	} else {
 		switch lcc.Command {
 		case "install":
-			sci, _ := GenerateSCSpec(lcc, tx.From)
+			sci, _ := GenerateSCSpec(lcc, tx.SenderAddress)
 			scd, _ := Compile(sci)
 			scHash[scd.Hash] = true
 			b, _ := json.Marshal(scd)
 			newlcc := &LcCommand{"install", scd.SCNAME, scd.Version, b}
 			b, _ = json.Marshal(newlcc)
-			newtx := common.Transaction{"lcssc", "lcssc", time.Now().String(), "signature", string(b)}
+			newtx := common.Transaction{0, 1, "lcssc", "lcssc", time.Now().String(), "signature", string(b), "PublicKey", 100}
 			sendTx(newtx)
 		case "instantiate":
 			if scStatus[lcc.SCNAME] != "install" {
@@ -142,7 +142,7 @@ func lcssc(tx *common.Transaction) {
 			b, _ := json.Marshal(scs)
 			newlcc := &LcCommand{"instantiate", lcc.SCNAME, lcc.Version, b}
 			b, _ = json.Marshal(newlcc)
-			newtx := common.Transaction{"lcssc", "lcssc", time.Now().String(), "signature", string(b)}
+			newtx := common.Transaction{0, 1, "lcssc", "lcssc", time.Now().String(), "signature", string(b), "PublicKey", 100}
 			sendTx(newtx)
 		case "update":
 			go update(lcc)
@@ -296,7 +296,7 @@ func update(lcc *LcCommand) {
 	if err != nil {
 		return
 	}
-	installTx := common.Transaction{"", "lcssc", time.Now().String(), "signature", string(scu.install)}
+	installTx := common.Transaction{0, 1, "", "lcssc", time.Now().String(), "signature", string(scu.install), "PublicKey", 100}
 	sendTx(installTx)
 	for {
 		if scStatus[lcc.SCNAME] == "install" {
@@ -304,6 +304,6 @@ func update(lcc *LcCommand) {
 		}
 		time.Sleep(time.Second)
 	}
-	instantiateTx := common.Transaction{"", "lcssc", time.Now().String(), "signature", string(scu.instantiate)}
+	instantiateTx := common.Transaction{0, 1, "", "lcssc", time.Now().String(), "signature", string(scu.instantiate), "PublicKey", 100}
 	sendTx(instantiateTx)
 }

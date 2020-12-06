@@ -244,11 +244,11 @@ func generateTx() []common.Transaction {
 	for i := 0; i <= transtoredis; i++ {
 		//cur := time.Now()
 		tmp := common.Transaction{
-			From:      strconv.Itoa(i), //int(cur.Unix())+
-			To:        "To",
-			Timestamp: strconv.Itoa(i), //cur.String(),
-			Signature: "Signature",
-			Message:   "Message",
+			SenderAddress:   strconv.Itoa(i), //int(cur.Unix())+
+			ReceiverAddress: "To",
+			Timestamp:       strconv.Itoa(i), //cur.String(),
+			Signature:       "Signature",
+			Message:         "Message",
 		}
 		res = append(res, tmp)
 	}
