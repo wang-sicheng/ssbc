@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	Nodes                 = 1
+	Nodes                 = 1	// 系统节点数
 	Urls         []string = []string{"http://192.168.72.1:8000"}
 	isSelfLeader bool     = true //leader
 	blockState   BlockState

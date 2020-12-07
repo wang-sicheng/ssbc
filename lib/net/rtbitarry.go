@@ -42,7 +42,7 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 func findCommonTrans(trans TransHash, sender string) {
 
 	currentBlock := blockState.GetCurrB()
-	if trans.BlockHash != currentBlock.Hash {
+	if trans.BlockHash != currentBlock.Hash {	// recTransHash接收的body内容：1.上一个Block的Hash；2.收到的交易的Hash
 		log.Info("findCommonTrans: BlockHash mismatch. This round may finish.")
 		return
 	}
@@ -53,11 +53,11 @@ func findCommonTrans(trans TransHash, sender string) {
 		data = append(data, d)
 	}
 	//redis the trans
-	_, err := conn.Do("SADD", data...)
+	_, err := conn.Do("SADD", data...)	// 将所有的交易Hash存入集合中
 	if err != nil {
 		log.Info("findCommonTrans err SADD trans: ", err)
 	}
-	//redis the senders
+	//redis the senders									// 将sender存入集合中
 	_, err = conn.Do("SADD", "CommonTx"+currentBlock.Hash, "CommonTx"+currentBlock.Hash+sender)
 	if err != nil {
 		log.Info("findCommonTrans err SADD senders: ", err)
@@ -99,7 +99,7 @@ func findCommonTrans(trans TransHash, sender string) {
 func generateFromCommonTx(commonTrans []string, currentBlock common.Block) {
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))  // 缓存？？
+	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))  // 每个节点在广播交易Hash时，会把交易缓存起来
 	if err != nil {
 		log.Info("generateFromCommonTx err GET: ", err)
 	}

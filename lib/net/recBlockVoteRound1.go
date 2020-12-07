@@ -44,13 +44,13 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 		log.Info("recBlockVoteRound1Handler err SCARD:", err)
 	}
 	log.Info("recBlockVoteRound1Handler voteCount : ", vc)
-	if vc == Nodes {
+	if vc == Nodes {	// 这里必须收到所有人的票才能进入下一轮次，实际是收到2f+1张同意票即可
 		log.Info("voteForRoundTwo")
 		go voteForRoundNew(v.Hash)
 	}
 	return nil, nil
 }
-
+// 查看同意票数是否达到2f+1
 func voteForRoundNew(hash string) {
 	//when receive whole nodes votes
 	//then statistics
@@ -78,7 +78,7 @@ func voteForRoundNew(hash string) {
 		}
 	}
 	v := false
-	if float64(votecount) > float64(Nodes)*0.75 {
+	if float64(votecount) > float64(Nodes)*0.75 {	// 实际无需 3/4 这么多
 		log.Info("voteForRoundTwo: vote round has received more the 3/4 affirmative vote")
 		v = true
 	}
