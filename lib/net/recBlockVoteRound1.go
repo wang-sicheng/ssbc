@@ -39,7 +39,7 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err != nil {
 		log.Info("recBlockVoteRound1Handler err SADD: ", err)
 	}
-	vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round1"))
+	vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round1"))  // 获取投票个数
 	if err != nil {
 		log.Info("recBlockVoteRound1Handler err SCARD:", err)
 	}
@@ -61,7 +61,7 @@ func voteForRoundNew(hash string) {
 	if err != nil {
 		log.Info("recBlockVoteRound1Handler err SADD: ", err)
 	}
-	vs := []Vote{}
+	var vs []Vote
 	for _, data := range votes {
 		t := Vote{}
 		err := json.Unmarshal(data, &t)

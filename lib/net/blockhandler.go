@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"hash"
 
+	"github.com/ssbc/crypto"
 	"strconv"
 )
 
@@ -241,14 +242,16 @@ func pullTrans() [][]byte {
 // 生成一系列交易
 func generateTx() []common.Transaction {
 	res := []common.Transaction{}
+	message := "Message"
+	strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 	for i := 0; i <= transtoredis; i++ {
 		//cur := time.Now()
 		tmp := common.Transaction{
 			SenderAddress:   strconv.Itoa(i), //int(cur.Unix())+
 			ReceiverAddress: "To",
 			Timestamp:       strconv.Itoa(i), //cur.String(),
-			Signature:       "Signature",
-			Message:         "Message",
+			Signature:       strSignature,
+			Message:         message,
 		}
 		res = append(res, tmp)
 	}
