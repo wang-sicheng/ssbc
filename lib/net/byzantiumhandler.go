@@ -2,6 +2,7 @@ package net
 
 import (
 	"github.com/ssbc/common"
+	"github.com/ssbc/lib/mysql"
 	"sync"
 
 	"github.com/cloudflare/cfssl/log"
@@ -9,8 +10,8 @@ import (
 )
 
 var (
-	Nodes                 = 1	// 系统节点数
-	Urls         []string = []string{"http://192.168.72.1:8000"}
+	Nodes                 = 1 // 系统节点数
+	Urls         []string = []string{"http://127.0.0.1:8000"}
 	isSelfLeader bool     = true //leader
 	blockState   BlockState
 	voteCounts   int = 1
@@ -21,7 +22,7 @@ var (
 	transinblock int = 6000
 	transtoredis int = 300000
 	times        int = 0
-	rounds       int = 10
+	rounds       int = 2
 	Testflag         = ""
 )
 
@@ -114,6 +115,10 @@ func (bs *BlockState) CheckAndStore(hash string) {
 	bs.currBlock = bs.tmpBlock
 	//send block to sc
 	//sendTxToSC(bs.currBlock)
+	blockId := mysql.InsertBlock(bs.currBlock) // 插入Block，并获取blockId
+	bs.currBlock.Id = blockId
+	mysql.InsertTransaction(bs.currBlock) // 插入Transaction
+
 	t2 = time.Now()
 	log.Info("duration: ", t2.Sub(t1))
 	log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))

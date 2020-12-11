@@ -26,7 +26,7 @@ const (
 
 var DB *sql.DB
 
-func InitDB() (DB *sql.DB) {
+func InitDB() {
 	dsn := fmt.Sprintf("%s:%s@%s(%s:%d)/%s", USERNAME, PASSWORD, NETWORK, SERVER, PORT, DATABASE)
 	// 不会校验账号密码是否正确
 	tmp, err := sql.Open("mysql", dsn)
@@ -36,7 +36,6 @@ func InitDB() (DB *sql.DB) {
 	}
 
 	DB = tmp
-	return DB
 }
 
 func QueryAllBlocks(DB *sql.DB) {
@@ -59,16 +58,6 @@ func QueryAllBlocks(DB *sql.DB) {
 		}
 		fmt.Print(*block)
 	}
-}
-
-func queryOne(DB *sql.DB) {
-	user := new(User)
-	row := DB.QueryRow("select * from block where id=?", 1)
-	if err := row.Scan(&user.ID, &user.Name, &user.Age); err != nil {
-		fmt.Printf("scan failed, err:%v", err)
-		return
-	}
-	fmt.Println(*user)
 }
 
 //查询多行
@@ -94,59 +83,49 @@ func queryMulti(DB *sql.DB) {
 	}
 
 }
-func InsertBlock(block common.Block) {
-	insertData(DB, block)
-}
-
-//插入数据
-func insertData(DB *sql.DB, block common.Block) {
-	result, err := DB.Exec("insert INTO block(bIndex,Timestamp,BPM,Hash,PreHash) values(?,?,?,?,?)", block.Id, block.Timestamp, block.Signature, block.Hash, block.PrevHash)
+func InsertBlock(block common.Block) int {
+	result, err := DB.Exec("insert INTO block(prev_hash, hash, merkle_root, signature) values(?,?,?,?)", block.PrevHash, block.Hash, block.MerkleRoot, block.Signature)
 	if err != nil {
 		fmt.Printf("Insert failed,err:%v", err)
-		return
+		return -1
 	}
 	lastInsertID, err := result.LastInsertId()
 	if err != nil {
 		fmt.Printf("Get lastInsertID failed,err:%v", err)
-		return
+		return -1
 	}
 	fmt.Println("LastInsertID:", lastInsertID)
 	rowsaffected, err := result.RowsAffected()
 	if err != nil {
 		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
+		return -1
 	}
 	fmt.Println("RowsAffected:", rowsaffected)
+	return int(lastInsertID)
 }
 
-//更新数据
-func updateData(DB *sql.DB) {
-	result, err := DB.Exec("UPDATE users set age=? where id=?", "30", 3)
-	if err != nil {
-		fmt.Printf("Insert failed,err:%v", err)
-		return
+func InsertTransaction(block common.Block) {
+	blockId := block.Id
+	for _, tx := range block.TX {
+		result, err := DB.Exec("insert INTO `transaction`(block_id, sender_address, receiver_address, signature, message, sender_public_key, transfer_amount) values(?,?,?,?,?,?,?)",
+			blockId, tx.SenderAddress, tx.ReceiverAddress, tx.Signature, tx.Message, tx.SenderPublicKey, tx.TransferAmount)
+		if err != nil {
+			fmt.Printf("Insert failed,err:%v", err)
+			return
+		}
+		lastInsertID, err := result.LastInsertId()
+		if err != nil {
+			fmt.Printf("Get lastInsertID failed,err:%v", err)
+			return
+		}
+		fmt.Println("LastInsertID:", lastInsertID)
+		rowsaffected, err := result.RowsAffected()
+		if err != nil {
+			fmt.Printf("Get RowsAffected failed,err:%v", err)
+			return
+		}
+		fmt.Println("RowsAffected:", rowsaffected)
 	}
-	rowsaffected, err := result.RowsAffected()
-	if err != nil {
-		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
-	}
-	fmt.Println("RowsAffected:", rowsaffected)
-}
-
-//删除数据
-func deleteData(DB *sql.DB) {
-	result, err := DB.Exec("delete from users where id=?", 1)
-	if err != nil {
-		fmt.Printf("Insert failed,err:%v", err)
-		return
-	}
-	rowsaffected, err := result.RowsAffected()
-	if err != nil {
-		fmt.Printf("Get RowsAffected failed,err:%v", err)
-		return
-	}
-	fmt.Println("RowsAffected:", rowsaffected)
 }
 
 func CloseDB() error {

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ssbc/common"
+	"github.com/ssbc/lib/mysql"
 	"github.com/ssbc/lib/net"
 	"github.com/ssbc/util"
 	"path/filepath"
@@ -91,6 +92,7 @@ func (s *ServerCmd) init() {
 		net.Flushall()                                      // 调用 redis 的 flushall 刷新缓存
 		net.Ports = strconv.Itoa(s.getServer().Config.Port) // 设置监听端口
 		log.Info("Ports :", net.Ports)
+		mysql.InitDB()
 		err := s.getServer().Start()
 		if err != nil {
 			return err
