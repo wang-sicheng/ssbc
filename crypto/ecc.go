@@ -4,14 +4,15 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"encoding/hex"
-	"os"
-	"crypto/x509"
-	"encoding/pem"
 	"crypto/sha256"
-	"math/big"
+	"crypto/x509"
+	"encoding/hex"
+	"encoding/pem"
 	"fmt"
+	"math/big"
+	"os"
 )
+
 //生成ECC椭圆曲线密钥对，保存到文件
 func GenerateECCKey() {
 	//生成密钥对
@@ -110,10 +111,10 @@ func SignECC(msg []byte, path string) string {
 	//rtext, _ := r.MarshalText()
 	//stext, _ := s.MarshalText()
 	//- 将r、s转成r、s字符串
-	strSigR := fmt.Sprintf("%x",r)
-	strSigS := fmt.Sprintf("%x",s)
-	fmt.Printf("r的16进制为:%s,长度为%d\n",strSigR,len(strSigR))
-	fmt.Printf("s的16进制为:%s,长度为%d\n",strSigS,len(strSigS))
+	strSigR := fmt.Sprintf("%x", r)
+	strSigS := fmt.Sprintf("%x", s)
+	fmt.Printf("r的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
+	fmt.Printf("s的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
 	if len(strSigR) == 63 {
 		strSigR = "0" + strSigR
 	}
@@ -121,76 +122,74 @@ func SignECC(msg []byte, path string) string {
 		strSigR = "0" + strSigS
 	}
 	//形成数字签名的der格式
-	derString := MakeDerSign(strSigR,strSigS)
+	derString := MakeDerSign(strSigR, strSigS)
 	return derString
 }
 
 //验证数字签名
-func VerifySignECC(msg []byte,derSignString string,path string) bool{
+func VerifySignECC(msg []byte, derSignString string, path string) bool {
 	//读取公钥
-	publicKey:=GetECCPublicKey(path)
+	publicKey := GetECCPublicKey(path)
 	//计算哈希值
 	hash := sha256.New()
 	hash.Write(msg)
 	bytes := hash.Sum(nil)
 	//验证数字签名
-	rBytes,sBytes := ParseDERSignString(derSignString)
+	rBytes, sBytes := ParseDERSignString(derSignString)
 	r := new(big.Int).SetBytes(rBytes)
 	s := new(big.Int).SetBytes(sBytes)
 	verify := ecdsa.Verify(publicKey, bytes, r, s)
 	return verify
 }
 
-
 //生成数字签名的DER编码格式
-func MakeDerSign(strR,strS string) string {
+func MakeDerSign(strR, strS string) string {
 	//获取R和S的长度
-	lenSigR := len(strR)/2 //16进制每两位1字节
-	lenSigS := len(strS)/2
+	lenSigR := len(strR) / 2 //16进制每两位1字节
+	lenSigS := len(strS) / 2
 	//- 计算DER序列的总长度
 	l := lenSigR + lenSigS + 4
 	//- 将10进制长度转16进制字符串
-	strLenSigR := fmt.Sprintf("%x",int64(lenSigR))
-	strLenSigS := fmt.Sprintf("%x",int64(lenSigS))
-	strLen := fmt.Sprintf("%x",int64(l))
+	strLenSigR := fmt.Sprintf("%x", int64(lenSigR))
+	strLenSigS := fmt.Sprintf("%x", int64(lenSigS))
+	strLen := fmt.Sprintf("%x", int64(l))
 	//- 拼凑DER编码格式
 	derString := "30" + strLen
 	derString += "02" + strLenSigR + strR
 	derString += "02" + strLenSigS + strS
 	derString += "01"
-	return  derString
+	return derString
 }
 
-
 // 解析DER编码格式
-func ParseDERSignString(derString string) (rBytes,sBytes []byte) {
-	derBytes,_ := hex.DecodeString(derString)
+func ParseDERSignString(derString string) (rBytes, sBytes []byte) {
+	derBytes, _ := hex.DecodeString(derString)
 	rBytes = derBytes[4:36]
-	sBytes = derBytes[len(derBytes) - 33 : len(derBytes) - 1]
-	strSigR := fmt.Sprintf("%x",rBytes)
-	strSigS := fmt.Sprintf("%x",sBytes)
-	fmt.Printf("rBytes的16进制为:%s,长度为%d\n",strSigR,len(strSigR))
-	fmt.Printf("sBytes的16进制为:%s,长度为%d\n",strSigS,len(strSigS))
+	sBytes = derBytes[len(derBytes)-33 : len(derBytes)-1]
+	strSigR := fmt.Sprintf("%x", rBytes)
+	strSigS := fmt.Sprintf("%x", sBytes)
+	fmt.Printf("rBytes的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
+	fmt.Printf("sBytes的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
 	return rBytes, sBytes
 }
 
 //测试
-func main() {
-	//生成ECC密钥对文件
-	GenerateECCKey()
-
-	//模拟发送者
-	//要发送的消息
-	msg:=[]byte("hello world")
-	//生成数字签名
-	signature:=SignECC(msg,"eccprivate.pem")
-
-	//模拟接受者
-	//接受到的消息
-	acceptmsg:=[]byte("hello world")
-	//接收到的签名
-	acceptSignature :=signature
-	//验证签名
-	verifySignECC := VerifySignECC(acceptmsg, acceptSignature, "eccpublic.pem")
-	fmt.Println("验证结果：",verifySignECC)
-}
+//func main() {
+//	//生成ECC密钥对文件
+//	GenerateECCKey()
+//
+//	//模拟发送者
+//	//要发送的消息
+//	msg:=[]byte("hello world")
+//	//生成数字签名
+//	signature:=SignECC(msg,"eccprivate.pem")
+//
+//	//模拟接受者
+//	//接受到的消息
+//	acceptmsg:=[]byte("hello world")
+//	//接收到的签名
+//	acceptSignature :=signature
+//	//验证签名
+//	verifySignECC := VerifySignECC(acceptmsg, acceptSignature, "eccpublic.pem")
+//	fmt.Println("验证结果：",verifySignECC)
+//}
