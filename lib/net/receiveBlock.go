@@ -5,6 +5,7 @@ import (
 	"github.com/cloudflare/cfssl/log"
 	rd "github.com/gomodule/redigo/redis"
 	"github.com/ssbc/common"
+	"github.com/ssbc/crypto"
 	"github.com/ssbc/lib/redis"
 	"time"
 )
@@ -76,7 +77,12 @@ func verify_block(block *common.Block) bool {
 		log.Info("This round may finish")
 		return false
 	}
-	if block.Signature != "Signature" {
+	//if block.Signature != "Signature" {
+	//	log.Info("verify block: Signature mismatch")
+	//	return false
+	//}
+	publicKeyStr := crypto.GetECCPublicKey("eccpublic.pem")
+	if crypto.VerifySignECC([]byte(block.Hash), block.Signature, publicKeyStr) == false{
 		log.Info("verify block: Signature mismatch")
 		return false
 	}

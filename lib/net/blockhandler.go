@@ -172,7 +172,8 @@ func transToRedis(trans chan []byte) {
 
 //TODO:交易验证
 func verifyTrans(tran common.Transaction) bool {
-	return true
+	res := crypto.VerifySignECC([]byte(tran.Message), tran.Signature, tran.SenderPublicKey)
+	return res
 }
 
 // 从redis中拉取交易
@@ -241,10 +242,13 @@ func pullTrans() [][]byte {
 
 // 生成一系列交易
 func generateTx() []common.Transaction {
-	res := []common.Transaction{}
-	message := "Message"
-	strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
-	for i := 0; i <= transtoredis; i++ {
+	var res []common.Transaction
+	var message string
+	//message = "transaction message"
+	//strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
+	for i := 0; i <= 15000; i++ {
+		message = "message"+strconv.Itoa(i)
+		strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 		//cur := time.Now()
 		tmp := common.Transaction{
 			SenderAddress:   strconv.Itoa(i), //int(cur.Unix())+
@@ -252,6 +256,7 @@ func generateTx() []common.Transaction {
 			Timestamp:       strconv.Itoa(i), //cur.String(),
 			Signature:       strSignature,
 			Message:         message,
+			SenderPublicKey: crypto.GetECCPublicKey("eccpublic.pem"),
 		}
 		res = append(res, tmp)
 	}

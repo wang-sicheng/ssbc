@@ -72,8 +72,30 @@ func GetECCPrivateKey(path string) *ecdsa.PrivateKey {
 	return privateKey
 }
 
+////取得ECC公钥
+//func GetECCPublicKey(path string) *ecdsa.PublicKey {
+//	//读取公钥
+//	file, err := os.Open(path)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer file.Close()
+//	info, _ := file.Stat()
+//	buf := make([]byte, info.Size())
+//	file.Read(buf)
+//	//pem解密
+//	block, _ := pem.Decode(buf)
+//	//x509解密
+//	publicInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+//	if err != nil {
+//		panic(err)
+//	}
+//	publicKey := publicInterface.(*ecdsa.PublicKey)
+//	return publicKey
+//}
+
 //取得ECC公钥
-func GetECCPublicKey(path string) *ecdsa.PublicKey {
+func GetECCPublicKey(path string) string {
 	//读取公钥
 	file, err := os.Open(path)
 	if err != nil {
@@ -83,16 +105,10 @@ func GetECCPublicKey(path string) *ecdsa.PublicKey {
 	info, _ := file.Stat()
 	buf := make([]byte, info.Size())
 	file.Read(buf)
-	//pem解密
-	block, _ := pem.Decode(buf)
-	//x509解密
-	publicInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		panic(err)
-	}
-	publicKey := publicInterface.(*ecdsa.PublicKey)
+	publicKey := string(buf)
 	return publicKey
 }
+
 
 //对消息的散列值生成数字签名
 func SignECC(msg []byte, path string) string {
@@ -126,10 +142,32 @@ func SignECC(msg []byte, path string) string {
 	return derString
 }
 
+////验证数字签名
+//func VerifySignECC(msg []byte, derSignString string, path string) bool {
+//	//读取公钥
+//	publicKey := GetECCPublicKey(path)
+//	//计算哈希值
+//	hash := sha256.New()
+//	hash.Write(msg)
+//	bytes := hash.Sum(nil)
+//	//验证数字签名
+//	rBytes, sBytes := ParseDERSignString(derSignString)
+//	r := new(big.Int).SetBytes(rBytes)
+//	s := new(big.Int).SetBytes(sBytes)
+//	verify := ecdsa.Verify(publicKey, bytes, r, s)
+//	return verify
+//}
+
 //验证数字签名
-func VerifySignECC(msg []byte, derSignString string, path string) bool {
-	//读取公钥
-	publicKey := GetECCPublicKey(path)
+func VerifySignECC(msg []byte, derSignString string, publicKeyStr string) bool {
+	//pem解密
+	block, _ := pem.Decode([]byte(publicKeyStr))
+	//x509解密
+	publicInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	publicKey := publicInterface.(*ecdsa.PublicKey)
 	//计算哈希值
 	hash := sha256.New()
 	hash.Write(msg)
@@ -173,7 +211,7 @@ func ParseDERSignString(derString string) (rBytes, sBytes []byte) {
 	return rBytes, sBytes
 }
 
-//测试
+////测试
 //func main() {
 //	//生成ECC密钥对文件
 //	GenerateECCKey()
@@ -190,6 +228,6 @@ func ParseDERSignString(derString string) (rBytes, sBytes []byte) {
 //	//接收到的签名
 //	acceptSignature :=signature
 //	//验证签名
-//	verifySignECC := VerifySignECC(acceptmsg, acceptSignature, "eccpublic.pem")
+//	verifySignECC := VerifySignECC(acceptmsg, acceptSignature, GetECCPublicKey("eccpublic.pem"))
 //	fmt.Println("验证结果：",verifySignECC)
 //}

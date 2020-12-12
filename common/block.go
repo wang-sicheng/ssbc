@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/cloudflare/cfssl/log"
+	"github.com/ssbc/crypto"
 	"strconv"
 	"sync"
 	"time"
@@ -61,7 +62,7 @@ func isBlockValid(newBlock, oldBlock Block) bool {
 //定义hash算法 SHA256 hasing
 func calculateHash(block Block) string {
 	//strconv.Itoa 将整数转换为十进制字符串形式（即：FormatInt(i, 10) 的简写）
-	record := strconv.Itoa(block.Id) + block.Timestamp + block.PrevHash + block.MerkleRoot + block.Signature
+	record := strconv.Itoa(block.Id) + block.Timestamp + block.PrevHash + block.MerkleRoot
 	h := sha256.New()       //创建一个Hash对象
 	h.Write([]byte(record)) //h.Write写入需要哈希的内容
 	hashed := h.Sum(nil)    //h.Sum添加额外的[]byte到当前的哈希中，一般不是经常需要这个操作
@@ -76,8 +77,9 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 	newBlock.Timestamp = t.String()
 	newBlock.PrevHash = oldBlock.Hash
 	newBlock.MerkleRoot = newBlock.GenerateMerkelRoot()
-	newBlock.Signature = "Signature"
 	newBlock.Hash = calculateHash(newBlock)
+	strSignature := crypto.SignECC([]byte(newBlock.Hash), "eccprivate.pem")
+	newBlock.Signature = strSignature
 	return newBlock
 }
 
