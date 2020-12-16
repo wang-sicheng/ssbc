@@ -109,7 +109,6 @@ func GetECCPublicKey(path string) string {
 	return publicKey
 }
 
-
 //对消息的散列值生成数字签名
 func SignECC(msg []byte, path string) string {
 	//取得私钥
@@ -129,8 +128,8 @@ func SignECC(msg []byte, path string) string {
 	//- 将r、s转成r、s字符串
 	strSigR := fmt.Sprintf("%x", r)
 	strSigS := fmt.Sprintf("%x", s)
-	fmt.Printf("r的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
-	fmt.Printf("s的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
+	//fmt.Printf("r的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
+	//fmt.Printf("s的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
 	if len(strSigR) == 63 {
 		strSigR = "0" + strSigR
 	}
@@ -204,10 +203,10 @@ func ParseDERSignString(derString string) (rBytes, sBytes []byte) {
 	derBytes, _ := hex.DecodeString(derString)
 	rBytes = derBytes[4:36]
 	sBytes = derBytes[len(derBytes)-33 : len(derBytes)-1]
-	strSigR := fmt.Sprintf("%x", rBytes)
-	strSigS := fmt.Sprintf("%x", sBytes)
-	fmt.Printf("rBytes的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
-	fmt.Printf("sBytes的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
+	//strSigR := fmt.Sprintf("%x", rBytes)
+	//strSigS := fmt.Sprintf("%x", sBytes)
+	//fmt.Printf("rBytes的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
+	//fmt.Printf("sBytes的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
 	return rBytes, sBytes
 }
 

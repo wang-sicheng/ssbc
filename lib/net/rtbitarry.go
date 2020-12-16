@@ -34,7 +34,8 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		log.Info("rtbitarry json err: ", err)
 		return nil, err
 	}
-	log.Info("rtbitarryHandler receiving: ", string(b))
+	log.Infof("接收到 %d 条交易的Hash", len(transHash.TransHashs))
+	//log.Info("rtbitarryHandler receiving: ", string(b))
 	go findCommonTrans(transHash, ctx.req.RemoteAddr)
 	return nil, nil
 }
@@ -42,7 +43,7 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 func findCommonTrans(trans TransHash, sender string) {
 
 	currentBlock := blockState.GetCurrB()
-	if trans.BlockHash != currentBlock.Hash {	// recTransHash接收的body内容：1.上一个Block的Hash；2.收到的交易的Hash
+	if trans.BlockHash != currentBlock.Hash { // recTransHash接收的body内容：1.上一个Block的Hash；2.收到的交易的Hash
 		log.Info("findCommonTrans: BlockHash mismatch. This round may finish.")
 		return
 	}
@@ -53,7 +54,7 @@ func findCommonTrans(trans TransHash, sender string) {
 		data = append(data, d)
 	}
 	//redis the trans
-	_, err := conn.Do("SADD", data...)	// 将所有的交易Hash存入集合中
+	_, err := conn.Do("SADD", data...) // 将所有的交易Hash存入集合中
 	if err != nil {
 		log.Info("findCommonTrans err SADD trans: ", err)
 	}
@@ -72,7 +73,7 @@ func findCommonTrans(trans TransHash, sender string) {
 		log.Info("findCommonTrans: Not Leader", isSelfLeader)
 		return
 	}
-	log.Info("Leader Mode")
+	log.Info("Leader Mode，准备建块")
 	if l != Nodes {
 		log.Info("findCommonTrans: Do not get enough nodes ", l)
 		return
@@ -87,19 +88,19 @@ func findCommonTrans(trans TransHash, sender string) {
 	for _, s := range senders {
 		senderInterface = append(senderInterface, s)
 	}
-	log.Info("senderInterface: ", senderInterface)
+	//log.Info("senderInterface: ", senderInterface)
 	commonTrans, err := rd.Strings(conn.Do("SINTER", senderInterface...)) // SINTER返回指定集合的交集
 	if err != nil {
 		log.Info("findCommonTrans err SINTER: ", err)
 	}
-	log.Info("findCommonTrans commonTrans: ", commonTrans)
+	log.Info("redis交易公共集长度: ", len(commonTrans))
 	generateFromCommonTx(commonTrans, currentBlock)
 }
 
 func generateFromCommonTx(commonTrans []string, currentBlock common.Block) {
 	conn := redis.Pool.Get()
 	defer conn.Close()
-	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash))  // 每个节点在广播交易Hash时，会把交易缓存起来
+	mb, err := rd.Bytes(conn.Do("GET", "CommonTxCache"+currentBlock.Hash)) // 每个节点在广播交易Hash时，会把交易缓存起来
 	if err != nil {
 		log.Info("generateFromCommonTx err GET: ", err)
 	}
@@ -121,11 +122,12 @@ func generateFromCommonTx(commonTrans []string, currentBlock common.Block) {
 		}
 	}
 	b := common.Block{TX: trans}
-	b = common.GenerateBlock(currentBlock, b)  // 建块
+	b = common.GenerateBlock(currentBlock, b) // 建块
 	bb, err := json.Marshal(b)
 	if err != nil {
 		log.Info("generateFromCommonTx err json block: ", err)
 		return
 	}
+	log.Infof("广播id: %d 的区块", b.Id)
 	Broadcast("recBlock", bb)
 }

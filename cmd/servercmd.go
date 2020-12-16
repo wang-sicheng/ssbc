@@ -86,13 +86,21 @@ func (s *ServerCmd) init() {
 		//if err != nil {
 		//	return err
 		//}
+		mysql.InitDB()
 		log.Info("Mysql Connection Open Successfully")
-		common.Init()                                       // 创建创世区块
+		block := mysql.QueryLastBlock()
+
+		if block.Id != 0 {
+			log.Info("不是第一次启动，数据库中已存在Block，读取id最大的区块，id: ", block.Id)
+			common.B = block
+		} else {
+			log.Info("节点第一次启动，数据库中不存在Block，准备创建创世区块")
+			common.Init() // 创建创世区块
+		}
 		net.Init()                                          // 设置 net 的 currentBlock 为创世区块，新建 signatures 和 senders 两个空 map
 		net.Flushall()                                      // 调用 redis 的 flushall 刷新缓存
 		net.Ports = strconv.Itoa(s.getServer().Config.Port) // 设置监听端口
 		log.Info("Ports :", net.Ports)
-		mysql.InitDB()
 		err := s.getServer().Start()
 		if err != nil {
 			return err

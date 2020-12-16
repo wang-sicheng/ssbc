@@ -23,13 +23,13 @@ func receiveBlockHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	if err != nil {
 		log.Info("ERR receiveBlockHandler: ", err)
 	}
-	log.Info("receiveBlockHandler: ", string(b))
+	//log.Info("receiveBlockHandler: ", string(b))
 	newBlock := &common.Block{}
 	err = json.Unmarshal(b, newBlock)
 	if err != nil {
 		log.Info("ERR receiveBlockHandler: ", err)
 	}
-	log.Info("receiveBlockHandler newBlock: ", newBlock)
+	log.Infof("接收到id: %d 的区块", newBlock.Id)
 	if !blockState.Checkblock(newBlock) {
 		log.Info("receiveBlockHandler: Hash mismatch. This round may finish")
 		return nil, nil
@@ -59,14 +59,14 @@ func verify(block *common.Block) {
 	if verify_block(block) {
 		voteBool = true
 	}
-	log.Info("verify block: ", voteBool)
 	blockState.SetTmpB(*block)
 	v := &Vote{Sender: Sender, Hash: block.Hash, Vote: voteBool}
 	b, err := json.Marshal(v)
 	if err != nil {
 		log.Info("verify_block: ", err)
 	}
-	log.Info("vote: ", string(b))
+	//log.Info("vote: ", string(b))
+	log.Info("第一轮投票, vote: ", voteBool)
 	Broadcast("recBlockVoteRound1", b)
 }
 
@@ -82,7 +82,7 @@ func verify_block(block *common.Block) bool {
 	//	return false
 	//}
 	publicKeyStr := crypto.GetECCPublicKey("eccpublic.pem")
-	if crypto.VerifySignECC([]byte(block.Hash), block.Signature, publicKeyStr) == false{
+	if crypto.VerifySignECC([]byte(block.Hash), block.Signature, publicKeyStr) == false {
 		log.Info("verify block: Signature mismatch")
 		return false
 	}
@@ -112,8 +112,8 @@ func verifyBlockTx(b *common.Block, currentBlock *common.Block) bool {
 	if err != nil {
 		log.Info("verifyBlockTx err SINTER: ", err)
 	}
-	log.Info("verifyBlockTx commonTrans:   ", commonTrans)
-	log.Info("verifyBlockTx len trans commonTrans :   ", len(b.TX), len(commonTrans))
+	//log.Info("verifyBlockTx commonTrans:   ", commonTrans)
+	log.Infof("区块交易数量: %d, 公共交易集数量: %d", len(b.TX), len(commonTrans))
 	if len(b.TX) != len(commonTrans) {
 		return false
 	}

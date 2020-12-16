@@ -60,6 +60,29 @@ func QueryAllBlocks(DB *sql.DB) {
 	}
 }
 
+func QueryLastBlock() common.Block {
+	block := new(common.Block)
+	rows, err := DB.Query("select * from block order by id desc limit 1")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		fmt.Printf("Query failed,err:%v", err)
+		return *block
+	}
+	for rows.Next() {
+		err = rows.Scan(&block.Id, &block.PrevHash, &block.Hash, &block.MerkleRoot, &block.TxCount, &block.Signature, &block.Timestamp)
+		if err != nil {
+			fmt.Printf("Scan failed,err:%v", err)
+			return *block
+		}
+		//fmt.Print(*block)
+	}
+	return *block
+}
+
 //查询多行
 func queryMulti(DB *sql.DB) {
 	user := new(User)
@@ -91,16 +114,16 @@ func InsertBlock(block common.Block) int {
 	}
 	lastInsertID, err := result.LastInsertId()
 	if err != nil {
-		fmt.Printf("Get lastInsertID failed,err:%v", err)
+		//fmt.Printf("Get lastInsertID failed,err:%v", err)
 		return -1
 	}
-	fmt.Println("LastInsertID:", lastInsertID)
-	rowsaffected, err := result.RowsAffected()
+	//fmt.Println("LastInsertID:", lastInsertID)
+	_, err = result.RowsAffected()
 	if err != nil {
 		fmt.Printf("Get RowsAffected failed,err:%v", err)
 		return -1
 	}
-	fmt.Println("RowsAffected:", rowsaffected)
+	//fmt.Println("RowsAffected:", rowsaffected)
 	return int(lastInsertID)
 }
 
@@ -113,18 +136,18 @@ func InsertTransaction(block common.Block) {
 			fmt.Printf("Insert failed,err:%v", err)
 			return
 		}
-		lastInsertID, err := result.LastInsertId()
+		//lastInsertID, err := result.LastInsertId()
 		if err != nil {
-			fmt.Printf("Get lastInsertID failed,err:%v", err)
+			//fmt.Printf("Get lastInsertID failed,err:%v", err)
 			return
 		}
-		fmt.Println("LastInsertID:", lastInsertID)
-		rowsaffected, err := result.RowsAffected()
+		//fmt.Println("LastInsertID:", lastInsertID)
+		_, err = result.RowsAffected()
 		if err != nil {
 			fmt.Printf("Get RowsAffected failed,err:%v", err)
 			return
 		}
-		fmt.Println("RowsAffected:", rowsaffected)
+		//fmt.Println("RowsAffected:", rowsaffected)
 	}
 }
 

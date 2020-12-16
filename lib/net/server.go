@@ -46,8 +46,8 @@ func (s *Server) Init(renew bool) (err error) {
 }
 
 func (s *Server) init(renew bool) (err error) {
-	serverVersion := "SSBC v1.0"
-	log.Infof("Server Version: %s", serverVersion)
+	//serverVersion := "SSBC v1.0"
+	//log.Infof("Server Version: %s", serverVersion)
 
 	// Initialize the config
 	err = s.initConfig()
@@ -202,11 +202,11 @@ func (s *Server) closeListener() error {
 }
 func (s *Server) registerHandlers() {
 	s.mux = gmux.NewRouter()
-	s.registerHandler("testinfo", newTestInfoEndpoint(s))  // 接受交易存入redis
-	s.registerHandler("recTransHash", receive_trans_bitarry(s))  // 确定公共交易集，建块
-	s.registerHandler("recBlock", receiveBlock(s))	// 接收Block，校验后vote
-	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s))	// 接收vote1，票数达到要求后投票
-	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s))	// 接收vote2，票数达到要求后落库（写入数组）
+	s.registerHandler("testinfo", newTestInfoEndpoint(s))          // 接受交易存入redis
+	s.registerHandler("recTransHash", receive_trans_bitarry(s))    // 确定公共交易集，建块
+	s.registerHandler("recBlock", receiveBlock(s))                 // 接收Block，校验后vote
+	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s)) // 接收vote1，票数达到要求后投票
+	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s)) // 接收vote2，票数达到要求后落库（写入数组）
 	s.registerHandler("receiveTx", receiveTx(s))
 
 }

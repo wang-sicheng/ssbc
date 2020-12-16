@@ -41,7 +41,7 @@ func (se *serverEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// No error occurred
 		scode := se.getSuccessRC()
 		w.WriteHeader(scode)
-		log.Infof(`%s %s %s %d 0 "OK"`, r.RemoteAddr, r.Method, r.URL, scode)
+		//log.Infof(`%s %s %s %d 0 "OK"`, r.RemoteAddr, r.Method, r.URL, scode)
 	}
 	// If a response was returned by the handler, write it now.
 	if resp != nil {

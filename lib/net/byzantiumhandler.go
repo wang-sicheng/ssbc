@@ -84,15 +84,15 @@ func (bs *BlockState) Checks(hash string) bool {
 
 }
 
-func (bs *BlockState) StoreBlock() {
-	bs.Lock()
-	defer bs.Unlock()
-	log.Info("store the block into Mysql")
-	log.Info("Successfully stored the block", bs.tmpBlock)
-	common.Blockchains <- bs.tmpBlock
-	bs.currBlock = bs.tmpBlock
-
-}
+//func (bs *BlockState) StoreBlock() {
+//	bs.Lock()
+//	defer bs.Unlock()
+//	log.Info("store the block into Mysql")
+//	log.Info("Successfully stored the block", bs.tmpBlock)
+//	common.Blockchains <- bs.tmpBlock
+//	bs.currBlock = bs.tmpBlock
+//
+//}
 
 func (bs *BlockState) CheckAndStore(hash string) {
 	bs.Lock()
@@ -106,22 +106,18 @@ func (bs *BlockState) CheckAndStore(hash string) {
 		log.Info("store_block: This round may finished. equal to current")
 		return
 	}
-	log.Info("Pulling out tmpBlock")
-	log.Info("store the block")
-	log.Info("store the block into Mysql")
-	//lib.Db.insert(block)
-	log.Info("Successfully stored the block", bs.tmpBlock)
-	common.Blockchains <- bs.tmpBlock
+	log.Info("Successfully stored the block, id: ", bs.tmpBlock.Id)
+	//common.Blockchains <- bs.tmpBlock
 	bs.currBlock = bs.tmpBlock
-	//send block to sc
-	//sendTxToSC(bs.currBlock)
+
 	blockId := mysql.InsertBlock(bs.currBlock) // 插入Block，并获取blockId
 	bs.currBlock.Id = blockId
 	mysql.InsertTransaction(bs.currBlock) // 插入Transaction
 
 	t2 = time.Now()
-	log.Info("duration: ", t2.Sub(t1))
-	log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
+	log.Info("耗时: ", t2.Sub(t1))
+	//log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
+	log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
 	if times+1 < rounds {
 		times++
 		//time.Sleep(time.Second)
@@ -133,7 +129,7 @@ func Init() {
 	blockState.SetCurrB(common.B)
 	signatures = make(map[string][]byte)
 	senders = make(map[string]string)
-	log.Info("Byzantium Init Successfully")
+	//log.Info("Byzantium Init Successfully")
 }
 
 func vote(s *Server) *serverEndpoint {

@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
-	"github.com/ssbc/common"
 	"github.com/ssbc/lib/redis"
 	"time"
 )
@@ -45,7 +44,7 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	if err != nil {
 		log.Info("ERR receiveTxHandler: ", err)
 	}
-	log.Info("receiveBlockHandler: ", string(b))
+	log.Info("receiveBlockHandler 接收的请求内容：\n", string(b))
 	//	newTx := &common.Transaction{}
 	//	err = json.Unmarshal(b, newTx)
 	//	if err !=nil{
@@ -119,8 +118,8 @@ func SendTrans() {
 	if err != nil {
 		log.Info("test err SADD: ", err)
 	}
-	log.Info("SendTran blockchain len: ", len(common.Blockchains))
-
+	//log.Info("common.Blockchains长度: ", len(common.Blockchains))
+	log.Infof("广播 %d 条交易的Hash", len(transhash.TransHashs))
 	Broadcast("recTransHash", b)
 
 }
@@ -132,6 +131,6 @@ func Flushall() {
 	if err != nil {
 		panic(err)
 	}
-	log.Info("flushall success")
+	log.Info("Redis已清空")
 
 }

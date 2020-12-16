@@ -27,7 +27,7 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err != nil {
 		log.Info("ERR recBlockVoteRound2Handler: ", err)
 	}
-	log.Info("recBlockVoteRound2Handler: ", string(b))
+	//log.Info("recBlockVoteRound2Handler: ", string(b))
 	v := &ReVote{}
 	err = json.Unmarshal(b, v)
 	if err != nil {
@@ -43,9 +43,8 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err != nil {
 		log.Info("recBlockVoteRound2Handler err:", err)
 	}
-	log.Info("recBlockVoteRound2Handler revoteCount : ", vc)
+	log.Infof("收到第二轮投票 %d 张", vc)
 	if vc == Nodes {
-		log.Info("statistic the votes")
 		go statistic(v.Hash)
 	}
 	return nil, nil
@@ -80,9 +79,9 @@ func statistic(hash string) {
 			votecount++
 		}
 	}
-	log.Info("revote for ture: ", votecount)
+	//log.Info("同意票数: ", votecount)
 	if float64(votecount) > float64(Nodes)*0.75 {
-		log.Info("recBlockVoteRound2Handler: vote round tow has received more than 2/3 affirmative votes")
+		log.Infof("第二轮投票同意票数 %d 张，达到2f+1，准备存储区块", votecount)
 		store_block(hash)
 	}
 }

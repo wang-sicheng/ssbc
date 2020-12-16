@@ -34,7 +34,7 @@ type Transaction struct {
 	TransferAmount  int    `json:"transfer_amount"`
 }
 
-var Blockchains = make(chan Block, 100000)
+//var Blockchains = make(chan Block, 100000)
 
 var B Block
 
@@ -88,10 +88,9 @@ func Init() {
 	genesisBlock := Block{1, 0, "", "", "", 44, "", "", nil}
 	genesisBlock.Hash = calculateHash(genesisBlock)
 	genesisBlock.MerkleRoot = genesisBlock.GenerateMerkelRoot()
-	log.Info("GenesisBlock: ", genesisBlock)
-	Blockchains <- genesisBlock
+	log.Info("创世区块 id: ", genesisBlock.Id)
+	//Blockchains <- genesisBlock
 	B = genesisBlock
-	log.Info("Block Init Successfully.")
 
 }
 

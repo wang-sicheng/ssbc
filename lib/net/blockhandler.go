@@ -208,6 +208,7 @@ func pullTrans() [][]byte {
 			break
 		}
 	}
+	log.Infof("从Redis拉取交易 %d 条", len(comTransSet))
 	return comTransSet
 
 	//comTransSet := []interface{}{}
@@ -247,7 +248,7 @@ func generateTx() []common.Transaction {
 	//message = "transaction message"
 	//strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 	for i := 0; i <= 15000; i++ {
-		message = "message"+strconv.Itoa(i)
+		message = "message" + strconv.Itoa(i)
 		strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 		//cur := time.Now()
 		tmp := common.Transaction{
@@ -260,6 +261,7 @@ func generateTx() []common.Transaction {
 		}
 		res = append(res, tmp)
 	}
+	log.Infof("生成交易 %d 条", len(res))
 	return res
 }
 
