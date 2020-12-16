@@ -1,7 +1,6 @@
 DROP TABLE IF EXISTS `block`;
 CREATE TABLE `block` (
   `id`  bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `pid` bigint(20) NOT NULL DEFAULT 0 COMMENT '父块id',
   `prev_hash`  varchar(255) NOT NULL DEFAULT 'prev_hash' COMMENT '父块哈希',
   `hash` varchar(255) NOT NULL DEFAULT 'hash' COMMENT '区块哈希',
   `merkle_root` varchar(255) NOT NULL DEFAULT 'merkle_root' COMMENT '区块交易的默克尔树根',
