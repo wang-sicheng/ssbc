@@ -34,6 +34,12 @@ type Transaction struct {
 	TransferAmount  int    `json:"transfer_amount"`
 }
 
+type Account struct {
+	Address string `json:"address"`
+	PrivateKey string `json:"private_key"`
+	PublicKey string `json:"public_key"`
+}
+
 //var Blockchains = make(chan Block, 100000)
 
 var B Block

@@ -9,30 +9,31 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/ssbc/crypto"
+	"github.com/ssbc/common"
+	_ "github.com/ssbc/lib/mysql"
 	"golang.org/x/crypto/ripemd160"
-	"log"
+	"github.com/cloudflare/cfssl/log"
 )
 
 const version = byte(0x00)
 const addressChecksumLen = 4 //对校验位一般取4位
 
-type Account struct {
-	Address string
-	PrivateKey string
-	PublicKey string
+func newAccount(s *Server) *serverEndpoint {
+	return &serverEndpoint{
+		Methods:   []string{"GET", "POST", "HEAD"},
+		Handler:   newAccountHandler,
+		Server:    s,
+		successRC: 200,
+	}
 }
 
-//func newAccount(s *Server) *serverEndpoint {
-//	return &serverEndpoint{
-//		Methods:   []string{"GET", "POST", "HEAD"},
-//		Handler:   newAccountHandler,
-//		Server:    s,
-//		successRC: 200,
-//	}
-//}
-
-func newAccountHandler() (interface{}, error) {
-	ac := Account{}
+func newAccountHandler(ctx *serverRequestContextImpl) (interface{}, error) {
+	b, err := ctx.ReadBodyBytes()
+	if err != nil {
+		log.Info("ERR newAccountHandler: ", err)
+	}
+	log.Info("newAccountHandler rec: ", string(b))
+	ac := common.Account{}
 	privateKey, publicKey := GenerateECCKey()
 	xPrivateKey, err := x509.MarshalECPrivateKey(privateKey)
 	if err != nil {
@@ -40,15 +41,22 @@ func newAccountHandler() (interface{}, error) {
 	}
 	//pem编码
 	privateBlock := pem.Block{
-		Type:  "ecc private key",
 		Bytes: xPrivateKey,
 	}
+	xPublicKey, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	publicBlock := pem.Block{
+		Bytes: xPublicKey,
+	}
+	// 生成账户地址
 	addr := GetAddress(publicKey)
 	ac.Address = fmt.Sprintf("%s", addr)
-	fmt.Printf("private key: %s", pem.EncodeToMemory(&privateBlock))
-	fmt.Printf("public key: %s", publicKey)
-	fmt.Printf("address:"+ac.Address)
-	return nil, nil
+	ac.PublicKey = fmt.Sprintf("%s", pem.EncodeToMemory(&publicBlock))
+	ac.PrivateKey = fmt.Sprintf("%s", pem.EncodeToMemory(&privateBlock))
+	//mysql.InsertAccount(ac)  // 存入数据库
+	return ac.Address, nil
 }
 
 //生成ECC椭圆曲线密钥对
@@ -88,7 +96,7 @@ func HashPubKey(pubKey []byte) []byte {
 	RIPEMD160Hasher := ripemd160.New()
 	_,err := RIPEMD160Hasher.Write(publicSHA256[:])
 	if err != nil {
-		log.Panic(err)
+		log.Info("ripemd160 error: ", err)
 	}
 	publicRIPEMD160 := RIPEMD160Hasher.Sum(nil)
 
@@ -107,6 +115,7 @@ func checksum(payload []byte) []byte {
 }
 
 //func main() {
-//	_, _ = newAccountHandler()
+//	res, err := newAccountHandler()
+//	fmt.Println(res, err)
 //}
 

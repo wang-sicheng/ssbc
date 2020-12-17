@@ -24,3 +24,12 @@ CREATE TABLE `transaction` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='交易表';
 
+DROP TABLE IF EXISTS `account`;
+CREATE TABLE `account` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `address` varchar(255) NOT NULL DEFAULT 'address' COMMENT '账户地址',
+  `public_key` varchar(255) NOT NULL DEFAULT 'public_key' COMMENT '用户公钥',
+  `private_key` varchar(255) NOT NULL DEFAULT 'private_key' COMMENT '用户私钥',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='账户表';
+

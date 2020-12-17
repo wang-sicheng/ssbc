@@ -202,12 +202,13 @@ func (s *Server) closeListener() error {
 }
 func (s *Server) registerHandlers() {
 	s.mux = gmux.NewRouter()
-	s.registerHandler("testinfo", newTestInfoEndpoint(s))          // 接受交易存入redis
+	s.registerHandler("testinfo", newTestInfoEndpoint(s))          // 生成测试交易存入redis
 	s.registerHandler("recTransHash", receive_trans_bitarry(s))    // 确定公共交易集，建块
 	s.registerHandler("recBlock", receiveBlock(s))                 // 接收Block，校验后vote
 	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s)) // 接收vote1，票数达到要求后投票
 	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s)) // 接收vote2，票数达到要求后落库（写入数组）
-	s.registerHandler("receiveTx", receiveTx(s))
+	s.registerHandler("receiveTx", receiveTx(s)) // 接收用户交易
+	s.registerHandler("newAccount", newAccount(s)) // 新建账户
 
 }
 func (s *Server) registerHandler(path string, se *serverEndpoint) {

@@ -151,6 +151,20 @@ func InsertTransaction(block common.Block) {
 	}
 }
 
+func InsertAccount(ac common.Account) {
+	result, err := DB.Exec("insert INTO `account`(address, public_key, private_key) values(?,?,?)",
+		                   ac.Address, ac.PublicKey, ac.PrivateKey)
+	if err != nil {
+		fmt.Printf("Insert failed,err:%v", err)
+		return
+	}
+	_, err = result.RowsAffected()
+	if err != nil {
+		fmt.Printf("Get RowsAffected failed,err:%v", err)
+		return
+	}
+}
+
 func CloseDB() error {
 
 	return DB.Close()
