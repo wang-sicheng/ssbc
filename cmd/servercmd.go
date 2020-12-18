@@ -96,6 +96,7 @@ func (s *ServerCmd) init() {
 		} else {
 			log.Info("节点第一次启动，数据库中不存在Block，准备创建创世区块")
 			common.Init() // 创建创世区块
+			mysql.InsertBlock(common.B)
 		}
 		net.Init()                                          // 设置 net 的 currentBlock 为创世区块，新建 signatures 和 senders 两个空 map
 		net.Flushall()                                      // 调用 redis 的 flushall 刷新缓存
