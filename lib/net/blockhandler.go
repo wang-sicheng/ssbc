@@ -247,7 +247,7 @@ func generateTx() []common.Transaction {
 	var message string
 	//message = "transaction message"
 	//strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
-	for i := 0; i <= 15000; i++ {
+	for i := 0; i < transtoredis; i++ {
 		message = "message" + strconv.Itoa(i)
 		strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 		//cur := time.Now()

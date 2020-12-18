@@ -20,9 +20,9 @@ var (
 	signatures   map[string][]byte
 	senders      map[string]string
 	transinblock int = 6000
-	transtoredis int = 300000
+	transtoredis int = 60000
 	times        int = 0
-	rounds       int = 2
+	rounds       int = 10
 	Testflag         = ""
 )
 

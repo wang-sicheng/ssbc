@@ -38,7 +38,7 @@ type TestInfoResponseNet struct {
 
 // 区块链测试接口
 func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
-
+	times = 0 // 轮次清零，以便不重启程序重复调用
 	log.Info("ctx.req.RemoteAddr: ", ctx.req.RemoteAddr)
 	b, err := ctx.ReadBodyBytes()
 	if err != nil {
@@ -67,6 +67,7 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	//	b,_ = json.Marshal(newTx)
 	//	go Broadcast("receiveTx", b)
 	//	return nil,nil
+	recTrans()
 	go SendTrans()
 	resp := TestInfoResponseNet{
 		TName:   "hello",
@@ -77,14 +78,7 @@ func testinfoHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 
 // 广播TransHash
 func SendTrans() {
-
-	if flag {
-		//flushall()
-		//time.Sleep(time.Second)
-		recTrans()
-		t1 = time.Now()
-		flag = false
-	}
+	t1 = time.Now()
 	a := pullTrans()
 	transhash := TransHash{}
 	transhash.BlockHash = blockState.GetCurrB().Hash

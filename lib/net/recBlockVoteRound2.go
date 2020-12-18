@@ -84,6 +84,9 @@ func statistic(hash string) {
 	if votecount >= common.QuorumNumber(Nodes) {
 		log.Infof("第二轮投票同意票数 %d 张，达到2f+1，准备存储区块", votecount)
 		store_block(hash)
+	} else {
+		log.Infof("同意票数: %d, 不足2f+1，本round结束", votecount)
+		log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
 	}
 }
 
