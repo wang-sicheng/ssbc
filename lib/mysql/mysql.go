@@ -107,7 +107,7 @@ func queryMulti(DB *sql.DB) {
 
 }
 func InsertBlock(block common.Block) int {
-	result, err := DB.Exec("insert INTO block(prev_hash, hash, merkle_root, signature) values(?,?,?,?)", block.PrevHash, block.Hash, block.MerkleRoot, block.Signature)
+	result, err := DB.Exec("insert INTO block(prev_hash, hash, tx_count, merkle_root, signature) values(?,?,?,?,?)", block.PrevHash, block.Hash, len(block.TX), block.MerkleRoot, block.Signature)
 	if err != nil {
 		fmt.Printf("Insert failed,err:%v", err)
 		return -1
@@ -153,7 +153,7 @@ func InsertTransaction(block common.Block) {
 
 func InsertAccount(ac common.Account) {
 	result, err := DB.Exec("insert INTO `account`(address, public_key, private_key) values(?,?,?)",
-		                   ac.Address, ac.PublicKey, ac.PrivateKey)
+		ac.Address, ac.PublicKey, ac.PrivateKey)
 	if err != nil {
 		fmt.Printf("Insert failed,err:%v", err)
 		return
