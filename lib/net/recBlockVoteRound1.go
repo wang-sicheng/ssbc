@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	rd "github.com/gomodule/redigo/redis"
+	"github.com/ssbc/common"
 	"github.com/ssbc/lib/redis"
 )
 
@@ -79,7 +80,7 @@ func voteForRoundNew(hash string) {
 		}
 	}
 	v := false
-	if float64(votecount) > float64(Nodes)*0.75 { // 实际无需 3/4 这么多
+	if votecount >= common.QuorumNumber(Nodes) {
 		log.Infof("第一轮投票同意票数 %d 张，达到2f+1，发起第二轮投票", votecount)
 		v = true
 	}

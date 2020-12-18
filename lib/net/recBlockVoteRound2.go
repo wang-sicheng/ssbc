@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	rd "github.com/gomodule/redigo/redis"
+	"github.com/ssbc/common"
 	"github.com/ssbc/lib/redis"
 )
 
@@ -80,7 +81,7 @@ func statistic(hash string) {
 		}
 	}
 	//log.Info("同意票数: ", votecount)
-	if float64(votecount) > float64(Nodes)*0.75 {
+	if votecount >= common.QuorumNumber(Nodes) {
 		log.Infof("第二轮投票同意票数 %d 张，达到2f+1，准备存储区块", votecount)
 		store_block(hash)
 	}
