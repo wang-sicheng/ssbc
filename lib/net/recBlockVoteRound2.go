@@ -85,12 +85,22 @@ func statistic(hash string) {
 		log.Infof("第二轮投票同意票数 %d 张，达到2f+1，准备存储区块", votecount)
 		store_block(hash)
 	} else {
-		log.Infof("同意票数: %d, 不足2f+1，本round结束", votecount)
+		log.Infof("同意票数: %d, 不足2f+1，本轮结束，交易返还至Redis", votecount)
+		restore_tx()
 		log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
+	}
+	if times+1 < rounds {
+		times++
+		//time.Sleep(time.Second)
+		go SendTrans()
 	}
 }
 
 func store_block(hash string) {
 	blockState.CheckAndStore(hash)
 
+}
+
+func restore_tx() {
+	blockState.restore_tx()
 }

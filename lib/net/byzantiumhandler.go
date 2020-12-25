@@ -1,8 +1,10 @@
 package net
 
 import (
+	"encoding/json"
 	"github.com/ssbc/common"
 	"github.com/ssbc/lib/mysql"
+	"github.com/ssbc/lib/redis"
 	"sync"
 
 	"github.com/cloudflare/cfssl/log"
@@ -84,15 +86,30 @@ func (bs *BlockState) Checks(hash string) bool {
 
 }
 
-//func (bs *BlockState) StoreBlock() {
-//	bs.Lock()
-//	defer bs.Unlock()
-//	log.Info("store the block into Mysql")
-//	log.Info("Successfully stored the block", bs.tmpBlock)
-//	common.Blockchains <- bs.tmpBlock
-//	bs.currBlock = bs.tmpBlock
-//
-//}
+func (bs *BlockState) restore_tx() {
+	bs.Lock()
+	defer bs.Unlock()
+
+	transjson := []interface{}{"transPool"}
+	for _, data := range bs.tmpBlock.TX {
+		if verifyTrans(data) {
+			transbyte, jserr := json.Marshal(data)
+			if jserr != nil {
+
+				return
+			}
+			transjson = append(transjson, transbyte)
+
+		}
+	}
+	conn := redis.Pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("LPUSH", transjson...)
+	if err != nil {
+		log.Info("restore tx err: ", err)
+	}
+
+}
 
 func (bs *BlockState) CheckAndStore(hash string) {
 	bs.Lock()
@@ -118,11 +135,6 @@ func (bs *BlockState) CheckAndStore(hash string) {
 	log.Info("耗时: ", t2.Sub(t1))
 	//log.Info("times and len of blockchain: ", times+1, len(common.Blockchains))
 	log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
-	if times+1 < rounds {
-		times++
-		//time.Sleep(time.Second)
-		go SendTrans()
-	}
 }
 
 func Init() {
