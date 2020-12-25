@@ -165,6 +165,28 @@ func InsertAccount(ac common.Account) {
 	}
 }
 
+func QueryAccountInfo(address string) common.Account{
+	ac := new(common.Account)
+	rows, err := DB.Query("select * from account where address=?", address)
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		fmt.Printf("Query failed,err:%v", err)
+		return *ac
+	}
+	for rows.Next() {
+		err = rows.Scan(&ac.Address, &ac.PrivateKey, &ac.PublicKey)
+		if err != nil {
+			fmt.Printf("Scan failed,err:%v", err)
+			return *ac
+		}
+	}
+	return *ac
+}
+
 func CloseDB() error {
 
 	return DB.Close()

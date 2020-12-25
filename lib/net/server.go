@@ -209,7 +209,7 @@ func (s *Server) registerHandlers() {
 	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s)) // 接收vote2，票数达到要求后落库（写入数组）
 	s.registerHandler("receiveTx", receiveTx(s)) // 接收用户交易
 	s.registerHandler("newAccount", newAccount(s)) // 新建账户
-
+	s.registerHandler("newTransaction", sendCoins(s)) // 交易构建
 }
 func (s *Server) registerHandler(path string, se *serverEndpoint) {
 	s.mux.Handle("/"+path, se)

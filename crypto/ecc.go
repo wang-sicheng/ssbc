@@ -141,6 +141,41 @@ func SignECC(msg []byte, path string) string {
 	return derString
 }
 
+//对消息的散列值生成数字签名
+func SignECC2(msg []byte, privateKeyStr string) string {
+	//pem解码
+	block, _ := pem.Decode([]byte(privateKeyStr))
+	//x509解码
+	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
+	//计算哈希值
+	hash := sha256.New()
+	//填入数据
+	hash.Write(msg)
+	bytes := hash.Sum(nil)
+	//对哈希值生成数字签名
+	r, s, err := ecdsa.Sign(rand.Reader, privateKey, bytes)
+	if err != nil {
+		panic(err)
+	}
+	//rtext, _ := r.MarshalText()
+	//stext, _ := s.MarshalText()
+	//- 将r、s转成r、s字符串
+	strSigR := fmt.Sprintf("%x", r)
+	strSigS := fmt.Sprintf("%x", s)
+	//fmt.Printf("r的16进制为:%s,长度为%d\n", strSigR, len(strSigR))
+	//fmt.Printf("s的16进制为:%s,长度为%d\n", strSigS, len(strSigS))
+	if len(strSigR) == 63 {
+		strSigR = "0" + strSigR
+	}
+	if len(strSigS) == 63 {
+		strSigR = "0" + strSigS
+	}
+	//形成数字签名的der格式
+	derString := MakeDerSign(strSigR, strSigS)
+	return derString
+}
+
+
 ////验证数字签名
 //func VerifySignECC(msg []byte, derSignString string, path string) bool {
 //	//读取公钥

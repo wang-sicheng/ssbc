@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/ssbc/crypto"
 	"github.com/ssbc/common"
+	"github.com/ssbc/lib/mysql"
 	_ "github.com/ssbc/lib/mysql"
 	"golang.org/x/crypto/ripemd160"
 	"github.com/cloudflare/cfssl/log"
@@ -55,7 +56,7 @@ func newAccountHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	ac.Address = fmt.Sprintf("%s", addr)
 	ac.PublicKey = fmt.Sprintf("%s", pem.EncodeToMemory(&publicBlock))
 	ac.PrivateKey = fmt.Sprintf("%s", pem.EncodeToMemory(&privateBlock))
-	//mysql.InsertAccount(ac)  // 存入数据库
+	mysql.InsertAccount(ac)  // 存入数据库
 	return ac.Address, nil
 }
 
