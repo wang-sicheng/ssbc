@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
+	"github.com/ssbc/crypto"
 	"github.com/ssbc/lib/redis"
 )
 
@@ -20,25 +21,23 @@ func receiveTxHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	if err != nil {
 		log.Info("ERR receiveTxHandler: ", err)
 	}
-	log.Info("receiveBlockHandler rec: ", string(b))
+	//log.Info("receiveBlockHandler rec: ", string(b))
 	newTx := &common.Transaction{}
 	err = json.Unmarshal(b, newTx)
 	if err != nil {
 		log.Info("ERR receiveBlockHandler newTx json: ", err)
 	}
-	log.Info("receiveBlockHandler newTx: ", *newTx)
+	//log.Info("receiveBlockHandler newTx: ", *newTx)
 	if verifyTx(newTx) {
-		go CacheTx(b)
+		CacheTx(b)
 	}
 
 	return nil, nil
 }
 
-func verifyTx(tx *common.Transaction) bool {
-	if tx.Signature == "Signature" {
-		return true
-	}
-	return false
+func verifyTx(tran *common.Transaction) bool {
+	res := crypto.VerifySignECC([]byte(tran.Message), tran.Signature, tran.SenderPublicKey)
+	return res
 }
 
 //func CacheTx(newTx *common.Transaction){
@@ -86,4 +85,14 @@ func CacheTx(b []byte) {
 	if err != nil {
 		log.Info("ERR receiveTxHandler RPUSH: ", err)
 	}
+
+	length, err2 := redis.ToInt(conn.Do("LLEN", "transPool"))
+	if err2 != nil {
+		log.Info("CacheTx LLEN err: ", err2)
+	}
+	//log.Infof("当前缓存池有交易：%d", length)
+	if length >= 6000 {
+		SendTrans()
+	}
+
 }

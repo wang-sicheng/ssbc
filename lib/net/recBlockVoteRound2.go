@@ -92,7 +92,7 @@ func statistic(hash string) {
 	if times+1 < rounds {
 		times++
 		//time.Sleep(time.Second)
-		go SendTrans()
+		//go SendTrans()
 	}
 }
 
