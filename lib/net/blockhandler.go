@@ -149,7 +149,7 @@ func recTrans() {
 	if err != nil {
 		log.Info("recTrans err: ", err)
 	}
-
+	log.Infof("redis存入交易%d条", len(transjson)-1)
 }
 
 func transToRedis(trans chan []byte) {
@@ -249,7 +249,7 @@ func generateTx() []common.Transaction {
 	//strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
 	for i := 0; i < transtoredis; i++ {
 		message = "message" + strconv.Itoa(i)
-		strSignature := crypto.SignECC([]byte(message), "eccprivate.pem")
+		strSignature := crypto.SignECC([]byte(message), crypto.GetECCPrivateKey("eccprivate.pem"))
 		//cur := time.Now()
 		tmp := common.Transaction{
 			SenderAddress:   strconv.Itoa(i), //int(cur.Unix())+

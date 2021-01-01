@@ -40,7 +40,7 @@ func sendCoinsHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	senderInfo := mysql.QueryAccountInfo(params.from)
 	if senderInfo != (common.Account{}){
 		privateKey, publicKey := senderInfo.PrivateKey, senderInfo.PublicKey
-		signature := crypto.SignECC2(Int2Byte(params.amount), privateKey)
+		signature := crypto.SignECC(Int2Byte(params.amount), privateKey)
 		newTrac := common.Transaction{
 			SenderAddress:   params.from,
 			ReceiverAddress: params.to,

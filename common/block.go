@@ -84,7 +84,7 @@ func GenerateBlock(oldBlock Block, newBlock Block) Block {
 	newBlock.PrevHash = oldBlock.Hash
 	newBlock.MerkleRoot = newBlock.GenerateMerkelRoot()
 	newBlock.Hash = calculateHash(newBlock)
-	strSignature := crypto.SignECC([]byte(newBlock.Hash), "eccprivate.pem")
+	strSignature := crypto.SignECC([]byte(newBlock.Hash), crypto.GetECCPrivateKey("eccprivate.pem"))
 	newBlock.Signature = strSignature
 	return newBlock
 }
