@@ -15,7 +15,7 @@ type User struct {
 	Age  int            `db:"age"`
 }
 
-const (
+var (
 	USERNAME = "root"
 	PASSWORD = "123456"
 	NETWORK  = "tcp"
@@ -165,7 +165,7 @@ func InsertAccount(ac common.Account) {
 	}
 }
 
-func QueryAccountInfo(address string) common.Account{
+func QueryAccountInfo(address string) common.Account {
 	ac := new(common.Account)
 	rows, err := DB.Query("select * from account where address=?", address)
 	defer func() {

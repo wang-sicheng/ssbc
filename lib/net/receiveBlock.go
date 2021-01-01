@@ -7,7 +7,6 @@ import (
 	"github.com/ssbc/common"
 	"github.com/ssbc/crypto"
 	"github.com/ssbc/lib/redis"
-	"time"
 )
 
 func receiveBlock(s *Server) *serverEndpoint {
@@ -34,20 +33,7 @@ func receiveBlockHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		log.Info("receiveBlockHandler: Hash mismatch. This round may finish")
 		return nil, nil
 	}
-	switch Testflag {
-	case "rtb":
-		t2 = time.Now()
-		dura := t2.Sub(t1)
-		log.Info("duration: ", dura)
-		log.Info("times : ", times+1)
-		if times+1 < rounds {
-			times++
-			//time.Sleep(time.Second)
-			go SendTrans()
-		}
-		return nil, nil
 
-	}
 	go verify(newBlock)
 	return nil, nil
 }

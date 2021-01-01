@@ -36,7 +36,10 @@ func rtbitarryHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	}
 	log.Infof("接收到 %d 条交易的Hash", len(transHash.TransHashs))
 	//log.Info("rtbitarryHandler receiving: ", string(b))
-	go findCommonTrans(transHash, ctx.req.RemoteAddr)
+	if IsSelfLeader {
+		//go findCommonTrans(transHash, ctx.req.RemoteAddr)
+		findCommonTrans(transHash, ctx.req.RemoteAddr)
+	}
 	return nil, nil
 }
 
@@ -69,13 +72,12 @@ func findCommonTrans(trans TransHash, sender string) {
 		log.Info("findCommonTrans err SCARD: ", err)
 	}
 	//Leader mode and check if got enough nodes tranx
-	if !isSelfLeader {
-		log.Info("findCommonTrans: Not Leader", isSelfLeader)
+	if !IsSelfLeader {
+		log.Info("findCommonTrans: Not Leader", IsSelfLeader)
 		return
 	}
-	log.Info("Leader Mode，准备建块")
 	if l != Nodes {
-		log.Info("findCommonTrans: Do not get enough nodes ", l)
+		log.Info("收到交易集: ", l)
 		return
 	}
 

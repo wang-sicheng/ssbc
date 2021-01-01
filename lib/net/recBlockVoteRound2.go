@@ -89,6 +89,7 @@ func statistic(hash string) {
 		restore_tx()
 		log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
 	}
+	Processing = false
 	if times+1 < rounds {
 		times++
 		//time.Sleep(time.Second)

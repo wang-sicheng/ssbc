@@ -3,6 +3,7 @@ package redis
 import (
 	"github.com/cloudflare/cfssl/log"
 	"github.com/gomodule/redigo/redis"
+	"strconv"
 	"time"
 )
 
@@ -63,6 +64,8 @@ func (conn *RedisConn) SetExpire(key string, time int) error {
 
 var Pool redis.Pool
 var Redisconn redis.Conn
+var RedisAddress string
+var RedisPort int
 
 func init() {
 	Pool = redis.Pool{
@@ -76,10 +79,10 @@ func init() {
 		Wait: true,
 		//连接方法
 		Dial: func() (redis.Conn, error) {
-			return redisConn("tcp", "127.0.0.1:6379")
+			return redisConn("tcp", RedisAddress+":"+strconv.Itoa(RedisPort))
 		},
 	}
-	conn, err := redisConn("tcp", "127.0.0.1:6379")
+	conn, err := redisConn("tcp", RedisAddress+":"+strconv.Itoa(RedisPort))
 	if err != nil {
 		log.Info("redis fail init fail:", err.Error())
 		//panic(err.Error())

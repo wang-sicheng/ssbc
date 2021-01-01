@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS `ssbc`;
+CREATE DATABASE `ssbc`;
+use `ssbc`;
+
 DROP TABLE IF EXISTS `block`;
 CREATE TABLE `block` (
   `id`  bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',

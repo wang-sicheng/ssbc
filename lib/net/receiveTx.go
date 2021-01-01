@@ -40,43 +40,6 @@ func verifyTx(tran *common.Transaction) bool {
 	return res
 }
 
-//func CacheTx(newTx *common.Transaction){
-//	if verifyTx(newTx){
-//		//if docker.IsSmartContract(newTx){
-//		//	log.Info("receiveBlockHandler: is SmartContract")
-//		//	smi, err := docker.GenerateSCSpec(newTx)
-//		//	if err != nil{
-//		//		log.Info("ERR receiveTxHandler GenerateSCSpec: ", err)
-//		//		return
-//		//	}
-//		//	smd,err := docker.Compile(smi)
-//		//	if err != nil{
-//		//		log.Info("ERR receiveTxHandler Compile: ", err)
-//		//		return
-//		//	}
-//		//	log.Info("SmartComtractDefintion: ", *smd)
-//		//	b,err := json.Marshal(smd)
-//		//	if err != nil{
-//		//		log.Info("ERR receiveTxHandler json smd: ", err)
-//		//		return
-//		//	}
-//		//	newTx.Message = string(b)
-//		//}
-//
-//		transbyte,err  := json.Marshal(newTx)
-//		if err != nil{
-//			log.Info("ERR receiveTxHandler json tx: ", err)
-//			return
-//		}
-//		conn := redis.Pool.Get()
-//		defer conn.Close()
-//		_,err = conn.Do("RPUSH", "transPool", transbyte)
-//		if err != nil{
-//			log.Info("ERR receiveTxHandler RPUSH: ", err)
-//		}
-//	}
-//}
-
 func CacheTx(b []byte) {
 
 	conn := redis.Pool.Get()
@@ -91,8 +54,9 @@ func CacheTx(b []byte) {
 		log.Info("CacheTx LLEN err: ", err2)
 	}
 	//log.Infof("当前缓存池有交易：%d", length)
-	if length >= 6000 {
+	if length >= 6000 && !Processing {
 		SendTrans()
+		Processing = true
 	}
 
 }
