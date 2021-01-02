@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
-	"encoding/asn1"
+	"encoding/json"
 	"encoding/pem"
 	"math/big"
 	"os"
@@ -98,15 +98,19 @@ func SignECC(msg []byte, privateKeyStr string) string {
 	if err != nil {
 		panic(err)
 	}
-	signatureAsn1, _ := asn1.Marshal(ECDSASignature{
+	//signatureAsn1, _ := asn1.Marshal(ECDSASignature{
+	//	R: r,
+	//	S: s,
+	//})
+	signatureJson, _ := json.Marshal(&ECDSASignature{
 		R: r,
 		S: s,
 	})
-	return string(signatureAsn1)
+	return string(signatureJson)
 }
 
 //验证数字签名
-func VerifySignECC(msg []byte, signatureAsn1 string, publicKeyStr string) bool {
+func VerifySignECC(msg []byte, signatureStr string, publicKeyStr string) bool {
 	//pem解密
 	block, _ := pem.Decode([]byte(publicKeyStr))
 	//x509解密
@@ -119,9 +123,16 @@ func VerifySignECC(msg []byte, signatureAsn1 string, publicKeyStr string) bool {
 	hash := sha256.New()
 	hash.Write(msg)
 	bytes := hash.Sum(nil)
-	//验证数字签名
+	////验证数字签名
+	//signature := new(ECDSASignature)
+	//_, err = asn1.Unmarshal([]byte(signatureAsn1), signature)
+	//if err != nil {
+	//	log.Error(signatureAsn1)
+	//	log.Error(len(signatureAsn1))
+	//	panic(err)
+	//}
 	signature := new(ECDSASignature)
-	_, err = asn1.Unmarshal([]byte(signatureAsn1), signature)
+	err = json.Unmarshal([]byte(signatureStr), signature)
 	if err != nil {
 		panic(err)
 	}
@@ -133,12 +144,16 @@ func VerifySignECC(msg []byte, signatureAsn1 string, publicKeyStr string) bool {
 //func main() {
 //	//生成ECC密钥对文件
 //	//GenerateECCKey()
-//	for i := 0; i < 30000; i++ {
-//		message := []byte(strconv.Itoa(i))
-//		signature := SignECC(message, GetECCPrivateKey("eccprivate.pem"))
-//		res := VerifySignECC(message, signature, GetECCPublicKey("eccpublic.pem"))
-//		if res != true{
-//			print(i)
-//		}
-//	}
+//	//for i := 0; i < 30000; i++ {
+//	//	message := []byte(strconv.Itoa(i))
+//	//	signature := SignECC(message, GetECCPrivateKey("eccprivate.pem"))
+//	//	res := VerifySignECC(message, signature, GetECCPublicKey("eccpublic.pem"))
+//	//	if res != true{
+//	//		print(i)
+//	//	}
+//	//}
+//	message := []byte("strconv.Itoa(i)")
+//	signature := SignECC(message, GetECCPrivateKey("eccprivate.pem"))
+//	res := VerifySignECC(message, signature, GetECCPublicKey("eccpublic.pem"))
+//	fmt.Println(res)
 //}
