@@ -4,16 +4,21 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
-	"github.com/ssbc/lib/mysql"
 	"github.com/ssbc/crypto"
+	"github.com/ssbc/lib/mysql"
+	"strconv"
 	"time"
-	"unsafe"
 )
 
-type sendCoinsParams struct {
-	from string
-	to string
-	amount int
+type SendCoinsParams struct {
+	From string `json:"from"`
+	To string `json:"to"`
+	Amount string `json:"amount"`
+}
+
+type GetTransParams struct {
+	Address string `json:"address"`
+	Limit string `json:"limit"`
 }
 
 func sendCoins(s *Server) *serverEndpoint {
@@ -32,22 +37,30 @@ func sendCoinsHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		log.Info("ERR sendCoinsHandler: ", err)
 	}
 	log.Info("sendCoinsHandler rec: ", string(b))
-	params := &sendCoinsParams{}
+	params := &SendCoinsParams{}
 	err = json.Unmarshal(b, params)
 	if err != nil {
 		log.Info("ERR sendCoinsHandler: ", err)
 	}
-	senderInfo := mysql.QueryAccountInfo(params.from)
+	amountInt, err := strconv.Atoi(params.Amount)
+	if err != nil {
+		return "amount type error, expect int", nil
+	}
+	//log.Infof("sendCoinsParams: %v", *params)
+	senderInfo := mysql.QueryAccountInfo(params.From)
+	//log.Infof("senderInfo from db: %v", senderInfo)
 	if senderInfo != (common.Account{}){
 		privateKey, publicKey := senderInfo.PrivateKey, senderInfo.PublicKey
-		signature := crypto.SignECC(Int2Byte(params.amount), privateKey)
+		message := "coin amount "+params.Amount
+		signature := crypto.SignECC([]byte(message), privateKey)
 		newTrac := common.Transaction{
-			SenderAddress:   params.from,
-			ReceiverAddress: params.to,
+			SenderAddress:   params.From,
+			ReceiverAddress: params.To,
 			Timestamp:       time.Now().String(),
 			Signature:       signature,
 			SenderPublicKey: publicKey,
-			TransferAmount:  params.amount,
+			TransferAmount:  amountInt,
+			Message: message,
 		}
 		b, err := json.Marshal(&newTrac)
 		if err != nil {
@@ -61,23 +74,33 @@ func sendCoinsHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	return nil, nil
 }
 
-func Int2Byte(data int)(ret []byte){
-	var l = unsafe.Sizeof(data)
-	ret = make([]byte, l)
-	var tmp = 0xff
-	var index uint = 0
-	for index=0; index<uint(l); index++{
-		ret[index] = byte((tmp<<(index*8) & data)>>(index*8))
+func getTransaction(s *Server) *serverEndpoint {
+	return &serverEndpoint{
+		Methods:   []string{"GET", "POST"},
+		Handler:   getTransactionHandler,
+		Server:    s,
+		successRC: 200,
 	}
-	return ret
 }
 
-func Byte2Int(data []byte)int{
-	var ret = 0
-	var l = len(data)
-	var i uint = 0
-	for i=0; i<uint(l); i++{
-		ret = ret | (int(data[i]) << (i*8))
+// 交易查询
+func getTransactionHandler(ctx *serverRequestContextImpl) (interface{}, error) {
+	b, err := ctx.ReadBodyBytes()
+	if err != nil {
+		log.Info("ERR getTransactionHandler: ", err)
+		return nil, err
 	}
-	return ret
+	log.Info("getTransactionHandler rec: ", string(b))
+	params := &GetTransParams{}
+	err = json.Unmarshal(b, params)
+	if err != nil {
+		log.Info("ERR getTransactionHandler: ", err)
+		return nil, err
+	}
+	limitInt, err := strconv.Atoi(params.Limit)
+	if err != nil {
+		return "limit type error, expect int", nil
+	}
+	res := mysql.QueryTransInfo(params.Address, limitInt)
+	return res, nil
 }

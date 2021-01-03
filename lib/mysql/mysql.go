@@ -165,6 +165,7 @@ func InsertAccount(ac common.Account) {
 	}
 }
 
+// 查询账户信息
 func QueryAccountInfo(address string) common.Account{
 	ac := new(common.Account)
 	rows, err := DB.Query("select * from account where address=?", address)
@@ -178,13 +179,39 @@ func QueryAccountInfo(address string) common.Account{
 		return *ac
 	}
 	for rows.Next() {
-		err = rows.Scan(&ac.Address, &ac.PrivateKey, &ac.PublicKey)
+		err = rows.Scan(&ac.Id, &ac.Address, &ac.PublicKey, &ac.PrivateKey)
 		if err != nil {
 			fmt.Printf("Scan failed,err:%v", err)
 			return *ac
 		}
 	}
 	return *ac
+}
+
+// 查询交易信息
+func QueryTransInfo(address string, limit int) []common.Transaction{
+	var res []common.Transaction
+	rows, err := DB.Query("select sender_address, receiver_address, timestamp, message, transfer_amount " +
+		"from transaction where sender_address=? order by timestamp DESC limit ?", address, limit)
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		fmt.Printf("Query failed,err:%v", err)
+		return res
+	}
+	for rows.Next() {
+		trans := new(common.Transaction)
+		err = rows.Scan(&trans.SenderAddress, &trans.ReceiverAddress, &trans.Timestamp, &trans.Message, &trans.TransferAmount)
+		if err != nil {
+			fmt.Printf("Scan failed,err:%v", err)
+			continue
+		}
+		res = append(res, *trans)
+	}
+	return res
 }
 
 func CloseDB() error {

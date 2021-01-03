@@ -35,6 +35,7 @@ type Transaction struct {
 }
 
 type Account struct {
+	Id int `json:"id"`
 	Address string `json:"address"`
 	PrivateKey string `json:"private_key"`
 	PublicKey string `json:"public_key"`

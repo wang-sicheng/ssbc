@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/ssbc/common"
+	"github.com/ssbc/crypto"
 	"github.com/ssbc/lib/redis"
 )
 
@@ -35,10 +36,8 @@ func receiveTxHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 }
 
 func verifyTx(tx *common.Transaction) bool {
-	if tx.Signature == "Signature" {
-		return true
-	}
-	return false
+	res := crypto.VerifySignECC([]byte(tx.Message), tx.Signature, tx.SenderPublicKey)
+	return res
 }
 
 //func CacheTx(newTx *common.Transaction){

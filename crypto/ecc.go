@@ -88,6 +88,9 @@ func SignECC(msg []byte, privateKeyStr string) string {
 	block, _ := pem.Decode([]byte(privateKeyStr))
 	//x509解码
 	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
 	//计算哈希值
 	hash := sha256.New()
 	//填入数据

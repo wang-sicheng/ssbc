@@ -42,6 +42,7 @@ func newAccountHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 	}
 	//pem编码
 	privateBlock := pem.Block{
+		Type:  "ecc private key",
 		Bytes: xPrivateKey,
 	}
 	xPublicKey, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
@@ -49,6 +50,7 @@ func newAccountHandler(ctx *serverRequestContextImpl) (interface{}, error) {
 		return nil, err
 	}
 	publicBlock := pem.Block{
+		Type:  "ecc public key",
 		Bytes: xPublicKey,
 	}
 	// 生成账户地址
