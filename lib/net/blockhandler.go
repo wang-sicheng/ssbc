@@ -181,18 +181,6 @@ func pullTrans() [][]byte {
 	conn := redis.Pool.Get()
 	defer conn.Close()
 
-	//tran,err := rd.ByteSlices(conn.Do("LRANGE","transPool",0,10))
-	//if err != nil{
-	//	log.Info("recTrans err lrange: ", err)
-	//}
-	//for _,tmp := range tran{
-	//	t := common.Transaction{}
-	//	err := json.Unmarshal(tmp, &t)
-	//	if err!=nil{
-	//		panic(err)
-	//	}
-	//	log.Info("tran : ", t)
-	//}
 	comTransSet := [][]byte{}
 	//time.Sleep(time.Second*5)
 
@@ -208,6 +196,7 @@ func pullTrans() [][]byte {
 			break
 		}
 	}
+	log.Info("---------------------------------------------------------------------------------------------------------------------------------------")
 	log.Infof("从Redis拉取交易 %d 条", len(comTransSet))
 	return comTransSet
 

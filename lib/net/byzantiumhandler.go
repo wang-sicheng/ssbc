@@ -12,20 +12,19 @@ import (
 )
 
 var (
-	Nodes                 = 1 // 系统节点数
-	Urls         []string = []string{"http://127.0.0.1:8000"}
-	isSelfLeader bool     = true //leader
+	Nodes        = 4 // 系统节点数
+	Urls         = []string{"http://127.0.0.1:8000", "http://127.0.0.1:8001", "http://127.0.0.1:8002", "http://127.0.0.1:8003"}
+	IsSelfLeader bool
 	blockState   BlockState
-	voteCounts   int = 1
 	Ports        string
-	Sender       string = "windows"
+	Sender       string
 	signatures   map[string][]byte
 	senders      map[string]string
-	transinblock int = 6000
-	transtoredis int = 60000
-	times        int = 0
-	rounds       int = 10
-	Testflag         = ""
+	transinblock = 6000
+	transtoredis = 60000
+	times        = 0
+	rounds       = 10
+	Processing   = false // 当前只能一个块一个块处理，当正在对某个区块进行共识时，Processing = true
 )
 
 type BlockState struct {
@@ -123,7 +122,7 @@ func (bs *BlockState) CheckAndStore(hash string) {
 		log.Info("store_block: This round may finished. equal to current")
 		return
 	}
-	log.Info("Successfully stored the block, id: ", bs.tmpBlock.Id)
+	log.Info("成功存储区块, id: ", bs.tmpBlock.Id)
 	//common.Blockchains <- bs.tmpBlock
 	bs.currBlock = bs.tmpBlock
 

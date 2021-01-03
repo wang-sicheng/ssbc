@@ -207,9 +207,11 @@ func (s *Server) registerHandlers() {
 	s.registerHandler("recBlock", receiveBlock(s))                 // 接收Block，校验后vote
 	s.registerHandler("recBlockVoteRound1", recBlockVoteRound1(s)) // 接收vote1，票数达到要求后投票
 	s.registerHandler("recBlockVoteRound2", recBlockVoteRound2(s)) // 接收vote2，票数达到要求后落库（写入数组）
-	s.registerHandler("receiveTx", receiveTx(s)) // 接收用户交易
-	s.registerHandler("newAccount", newAccount(s)) // 新建账户
-	s.registerHandler("newTransaction", sendCoins(s)) // 交易构建
+	s.registerHandler("receiveTx", receiveTx(s))                   // 接收用户交易
+	s.registerHandler("newAccount", newAccount(s))                 // 新建账户
+	s.registerHandler("newTransaction", sendCoins(s))              // 交易构建
+
+	s.registerHandler("mockClient", mockClient(s))
 	s.registerHandler("queryTransactions", getTransaction(s)) // 交易查询
 
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/ssbc/common"
 	"github.com/ssbc/lib/mysql"
 	"github.com/ssbc/lib/net"
+	"github.com/ssbc/lib/redis"
 	"github.com/ssbc/util"
 	"path/filepath"
 	"strconv"
@@ -81,13 +82,13 @@ func (s *ServerCmd) init() {
 		if len(args) > 0 {
 			return errors.Errorf(extraArgsError, args, startCmd.UsageString())
 		}
-		// Test 暂不启动DB
-		//err := mysql.DB.Ping()
-		//if err != nil {
-		//	return err
-		//}
+
+		redis.RedisAddress = s.getServer().Config.RedisAddress
+		redis.RedisPort = s.getServer().Config.RedisPort
+
+		mysql.PORT = s.getServer().Config.DbPort // 获取数据库端口号
 		mysql.InitDB()
-		log.Info("Mysql Connection Open Successfully")
+		log.Infof("连接到MySQL，%s:%d", mysql.SERVER, mysql.PORT)
 		block := mysql.QueryLastBlock()
 
 		if block.Id != 0 {
@@ -102,6 +103,8 @@ func (s *ServerCmd) init() {
 		net.Flushall()                                      // 调用 redis 的 flushall 刷新缓存
 		net.Ports = strconv.Itoa(s.getServer().Config.Port) // 设置监听端口
 		log.Info("Ports :", net.Ports)
+		net.IsSelfLeader = net.Ports == "8000" // 端口为8000的节点是leader节点
+		net.Sender = net.Ports
 		err := s.getServer().Start()
 		if err != nil {
 			return err

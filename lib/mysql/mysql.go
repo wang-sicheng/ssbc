@@ -15,7 +15,7 @@ type User struct {
 	Age  int            `db:"age"`
 }
 
-const (
+var (
 	USERNAME = "root"
 	PASSWORD = "123456"
 	NETWORK  = "tcp"
@@ -166,7 +166,7 @@ func InsertAccount(ac common.Account) {
 }
 
 // 查询账户信息
-func QueryAccountInfo(address string) common.Account{
+func QueryAccountInfo(address string) common.Account {
 	ac := new(common.Account)
 	rows, err := DB.Query("select * from account where address=?", address)
 	defer func() {
@@ -189,9 +189,9 @@ func QueryAccountInfo(address string) common.Account{
 }
 
 // 查询交易信息
-func QueryTransInfo(address string, limit int) []common.Transaction{
+func QueryTransInfo(address string, limit int) []common.Transaction {
 	var res []common.Transaction
-	rows, err := DB.Query("select sender_address, receiver_address, timestamp, message, transfer_amount " +
+	rows, err := DB.Query("select sender_address, receiver_address, timestamp, message, transfer_amount "+
 		"from transaction where sender_address=? order by timestamp DESC limit ?", address, limit)
 	defer func() {
 		if rows != nil {
