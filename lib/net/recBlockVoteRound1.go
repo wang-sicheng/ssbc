@@ -40,9 +40,13 @@ func recBlockVoteRound1Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err != nil {
 		log.Info("recBlockVoteRound1Handler err SADD: ", err)
 	}
-	vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round1")) // 获取投票个数
+	//vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round1")) // 获取投票个数
+	//if err != nil {
+	//	log.Info("recBlockVoteRound1Handler err SCARD:", err)
+	//}
+	vc, err := redis.ToInt(conn.Do("INCR", v.Hash+"round1count")) // 增加和读取是原子性操作
 	if err != nil {
-		log.Info("recBlockVoteRound1Handler err SCARD:", err)
+		log.Info("recBlockVoteRound1Handler incr err:", err)
 	}
 	log.Infof("收到第一轮投票 %d 张", vc)
 	if vc == Nodes { // 这里必须收到所有人的票才能进入下一轮次，实际是收到2f+1张同意票即可

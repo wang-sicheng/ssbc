@@ -40,9 +40,13 @@ func recBlockVoteRound2Handler(ctx *serverRequestContextImpl) (interface{}, erro
 	if err != nil {
 		log.Info("recBlockVoteRound2Handler err SADD: ", err)
 	}
-	vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round2"))
+	//vc, err := redis.ToInt(conn.Do("SCARD", v.Hash+"round2"))
+	//if err != nil {
+	//	log.Info("recBlockVoteRound2Handler err:", err)
+	//}
+	vc, err := redis.ToInt(conn.Do("INCR", v.Hash+"round2count")) // 增加和读取是原子性操作
 	if err != nil {
-		log.Info("recBlockVoteRound2Handler err:", err)
+		log.Info("recBlockVoteRound2Handler incr err:", err)
 	}
 	log.Infof("收到第二轮投票 %d 张", vc)
 	if vc == Nodes {
